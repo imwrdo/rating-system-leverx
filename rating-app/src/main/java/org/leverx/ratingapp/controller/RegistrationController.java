@@ -8,12 +8,11 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping(path="auth")
-@AllArgsConstructor
-public class RegistrationController {
-    private RegistrationService registrationService;
 
-    @Autowired
-    private void setRegistrationService(RegistrationService registrationService) {
+public class RegistrationController {
+    private final RegistrationService registrationService;
+
+     private RegistrationController(RegistrationService registrationService) {
         this.registrationService = registrationService;
     }
     @PostMapping
