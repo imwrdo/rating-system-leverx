@@ -83,6 +83,10 @@ public class User implements UserDetails {
         this.password = password;
     }
 
+    public void activateUser() {
+        is_activated = true;
+    }
+
     @Override
     public String getUsername() {
         return email;
@@ -107,4 +111,5 @@ public class User implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
+
 }

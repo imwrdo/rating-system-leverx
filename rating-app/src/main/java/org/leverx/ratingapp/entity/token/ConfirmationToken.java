@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.experimental.Accessors;
 import org.leverx.ratingapp.entity.User;
 
 import java.time.LocalDateTime;
@@ -38,6 +37,23 @@ public class ConfirmationToken {
             name = "app_user_id"
     )
     private User user;
+
+
+    public LocalDateTime getConfirmationDateTime() {
+        return confirmationDateTime;
+    }
+
+    public LocalDateTime getExpiryDateTime() {
+        return expiryDateTime;
+    }
+
+    public void setConfirmationDateTime(LocalDateTime confirmationDateTime) {
+        this.confirmationDateTime = confirmationDateTime;
+    }
+
+    public User getUser() {
+        return user;
+    }
 
     public ConfirmationToken(String token,
                              LocalDateTime createDateTime,
