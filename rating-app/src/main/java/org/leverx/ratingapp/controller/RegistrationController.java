@@ -1,7 +1,7 @@
 package org.leverx.ratingapp.controller;
 
 import lombok.AllArgsConstructor;
-import org.leverx.ratingapp.service.RegistrationRequest;
+import org.leverx.ratingapp.dto.RegistrationRequestDTO;
 import org.leverx.ratingapp.service.RegistrationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,7 +20,7 @@ public class RegistrationController {
         this.registrationService = registrationService;
     }
     @PostMapping
-    public String register(@RequestBody RegistrationRequest request){
+    public String register(@RequestBody RegistrationRequestDTO request){
         return registrationService.register(request);
     }
 }
