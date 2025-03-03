@@ -1,26 +1,31 @@
 package org.leverx.ratingapp.repository;
 
-import jakarta.transaction.Transactional;
-import org.leverx.ratingapp.entity.token.ConfirmationToken;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
-import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 @Repository
-@Transactional
-public interface ConfirmationTokenRepository
-        extends JpaRepository<ConfirmationToken, Long> {
+public class ConfirmationTokenRepository {
+    private final RedisTemplate<String, String> redisTemplate;
+    private static final String TOKEN_PREFIX = "user_token:";
+    private static final long TOKEN_TTL_HOURS = 24;
 
-    Optional<ConfirmationToken> findByToken(String token);
+    public ConfirmationTokenRepository(RedisTemplate<String, String> redisTemplate) {
+        this.redisTemplate = redisTemplate;
+    }
 
-    @Transactional
-    @Modifying
-    @Query("UPDATE ConfirmationToken c " +
-            "SET c.confirmationDateTime = ?2 " +
-            "WHERE c.token = ?1")
-    void updateConfirmedAt(String token, LocalDateTime confirmedAt);
+    public void saveToken(String email, String token) {
+        String key = TOKEN_PREFIX + email;
+        redisTemplate.opsForValue().set(key, token);
+        redisTemplate.expire(key, TOKEN_TTL_HOURS, TimeUnit.HOURS);
+    }
+
+    public String getToken(String email) {
+        return redisTemplate.opsForValue().get(TOKEN_PREFIX + email);
+    }
+
+    public void removeToken(String email) {
+        redisTemplate.delete(TOKEN_PREFIX + email);
+    }
 }

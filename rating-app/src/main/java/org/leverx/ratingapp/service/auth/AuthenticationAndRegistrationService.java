@@ -33,33 +33,30 @@ public class AuthenticationAndRegistrationService {
     private final AuthenticationManager authenticationManager;
 
     public AuthenticationResponse register(RegistrationRequestDTO registrationRequestDTO) {
-        boolean isValidEmail = emailValidatorService
-                .test(registrationRequestDTO.email());
+        boolean isValidEmail = emailValidatorService.test(registrationRequestDTO.email());
         if(!isValidEmail) {
             throw new IllegalArgumentException("Invalid email");
         }
+        
+        if (userRepository.existsByEmail(registrationRequestDTO.email())) {
+            throw new IllegalArgumentException("Email already registered");
+        }
+
         var user = User.builder()
                 .first_name(registrationRequestDTO.first_name())
                 .last_name(registrationRequestDTO.last_name())
                 .email(registrationRequestDTO.email())
-                .password(passwordEncoder
-                        .encode(registrationRequestDTO.password()))
+                .password(passwordEncoder.encode(registrationRequestDTO.password()))
                 .role(Role.SELLER)
                 .build();
         userRepository.save(user);
+        
         var jwtToken = jwtService.generateToken(user);
+        confirmationTokenService.saveConfirmationToken(user.getEmail(), jwtToken);
 
-        ConfirmationToken confirmationToken = ConfirmationToken.builder()
-                        .token(jwtToken)
-                        .createDateTime(LocalDateTime.now())
-                        .expiryDateTime(LocalDateTime.now().plusDays(1))
-                        .user(user)
-                        .build();
-        confirmationTokenService.saveConfirmationToken(confirmationToken);
-
-        String link = "http://localhost:8080/auth/confirm?token="+jwtToken;
+        String link = "http://localhost:8080/auth/confirm?token=" + jwtToken;
         emailSender.send(registrationRequestDTO.email(),
-                buildEmail(registrationRequestDTO.first_name(),link));
+                buildEmail(registrationRequestDTO.first_name(), link));
 
         return AuthenticationResponse.builder()
                 .token(jwtToken)
@@ -90,30 +87,22 @@ public class AuthenticationAndRegistrationService {
 
     @Transactional
     public String confirmToken(String token) {
-        ConfirmationToken confirmationToken = confirmationTokenService
-                .getConfirmationToken(token)
-                .orElseThrow(()->
-                        new IllegalArgumentException(String
-                                .format("Token %s not found", token)
-                        ));
-        if(confirmationToken.getConfirmationDateTime() != null) {
-            throw new IllegalArgumentException("Email already confirmed");
-        }
-        LocalDateTime expirationDateTime = confirmationToken.getExpiryDateTime();
-
-        if(expirationDateTime.isBefore(LocalDateTime.now())) {
-            throw new IllegalArgumentException("Token is expired");
+        var userEmail = jwtService.extractUsername(token);
+        if (userEmail == null) {
+            throw new IllegalArgumentException("Invalid token");
         }
 
-        confirmationTokenService.setConfirmationDate(token);
-        userService.enableUser(
-                confirmationToken.getUser()
-                .getEmail());
+        var storedToken = confirmationTokenService.getConfirmationToken(userEmail)
+                .orElseThrow(() -> new IllegalArgumentException("Token not found or expired"));
 
+        if (!token.equals(storedToken)) {
+            throw new IllegalArgumentException("Invalid token");
+        }
+
+        userService.enableUser(userEmail);
+        confirmationTokenService.removeConfirmationToken(userEmail);
         return "confirmed";
     }
-
-
 
     private String buildEmail(String name, String link) {
         return "<div style=\"font-family:Helvetica,Arial,sans-serif;font-size:16px;margin:0;color:#0b0c0c\">\n" +

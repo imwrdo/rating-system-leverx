@@ -1,10 +1,8 @@
 package org.leverx.ratingapp.service.auth;
 
 import org.leverx.ratingapp.repository.ConfirmationTokenRepository;
-import org.leverx.ratingapp.entity.token.ConfirmationToken;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Service
@@ -15,20 +13,15 @@ public class ConfirmationTokenService {
         this.confirmationTokenRepository = confirmationTokenRepository;
     }
 
-    public void saveConfirmationToken(ConfirmationToken confirmationToken) {
-        confirmationTokenRepository
-                .save(confirmationToken);
+    public void saveConfirmationToken(String email, String token) {
+        confirmationTokenRepository.saveToken(email, token);
     }
 
-    public Optional<ConfirmationToken> getConfirmationToken(String token) {
-        return confirmationTokenRepository.findByToken(token);
+    public Optional<String> getConfirmationToken(String email) {
+        return Optional.ofNullable(confirmationTokenRepository.getToken(email));
     }
 
-    public void setConfirmationDate(String token) {
-        confirmationTokenRepository
-                .updateConfirmedAt(
-                  token,LocalDateTime.now()
-                );
+    public void removeConfirmationToken(String email) {
+        confirmationTokenRepository.removeToken(email);
     }
-
 }
