@@ -6,19 +6,16 @@ import org.leverx.ratingapp.dto.auth.AuthenticationRequestDTO;
 import org.leverx.ratingapp.dto.auth.AuthenticationResponse;
 import org.leverx.ratingapp.dto.auth.RegistrationRequestDTO;
 import org.leverx.ratingapp.entity.User;
-import org.leverx.ratingapp.entity.token.ConfirmationToken;
 import org.leverx.ratingapp.repository.UserRepository;
 import org.leverx.ratingapp.service.UserService;
-import org.leverx.ratingapp.service.emaii.interfaces.EmailSender;
-import org.leverx.ratingapp.service.emaii.EmailValidatorService;
+import org.leverx.ratingapp.service.email.interfaces.EmailSender;
+import org.leverx.ratingapp.service.email.EmailValidatorService;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import org.leverx.ratingapp.enums.Role;
-
-import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor

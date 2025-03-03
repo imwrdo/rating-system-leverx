@@ -1,6 +1,5 @@
-package org.leverx.ratingapp.security.config;
+package org.leverx.ratingapp.config;
 
-import lombok.RequiredArgsConstructor;
 import org.leverx.ratingapp.repository.UserRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

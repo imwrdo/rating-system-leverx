@@ -1,8 +1,8 @@
-package org.leverx.ratingapp.service.emaii;
+package org.leverx.ratingapp.service.email;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
-import org.leverx.ratingapp.service.emaii.interfaces.EmailSender;
+import org.leverx.ratingapp.service.email.interfaces.EmailSender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -38,4 +38,5 @@ public class EmailService implements EmailSender {
             throw new IllegalStateException("Failed to send email");
         }
     }
+
 }

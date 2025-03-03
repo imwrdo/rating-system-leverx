@@ -1,8 +1,5 @@
 package org.leverx.ratingapp.dto;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import lombok.Data;
 import org.leverx.ratingapp.enums.Role;
 
