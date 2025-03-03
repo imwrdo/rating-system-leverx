@@ -1,13 +1,16 @@
-package org.leverx.ratingapp.service;
+package org.leverx.ratingapp.service.auth;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.leverx.ratingapp.dto.AuthenticationRequestDTO;
-import org.leverx.ratingapp.dto.AuthenticationResponse;
-import org.leverx.ratingapp.dto.RegistrationRequestDTO;
+import org.leverx.ratingapp.dto.auth.AuthenticationRequestDTO;
+import org.leverx.ratingapp.dto.auth.AuthenticationResponse;
+import org.leverx.ratingapp.dto.auth.RegistrationRequestDTO;
 import org.leverx.ratingapp.entity.User;
 import org.leverx.ratingapp.entity.token.ConfirmationToken;
 import org.leverx.ratingapp.repository.UserRepository;
+import org.leverx.ratingapp.service.UserService;
+import org.leverx.ratingapp.service.emaii.EmailSender;
+import org.leverx.ratingapp.service.emaii.EmailValidatorService;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -45,6 +48,15 @@ public class AuthenticationAndRegistrationService {
                 .build();
         userRepository.save(user);
         var jwtToken = jwtService.generateToken(user);
+
+        ConfirmationToken confirmationToken = ConfirmationToken.builder()
+                        .token(jwtToken)
+                        .createDateTime(LocalDateTime.now())
+                        .expiryDateTime(LocalDateTime.now().plusDays(1))
+                        .user(user)
+                        .build();
+        confirmationTokenService.saveConfirmationToken(confirmationToken);
+
         String link = "http://localhost:8080/auth/confirm?token="+jwtToken;
         emailSender.send(registrationRequestDTO.email(),
                 buildEmail(registrationRequestDTO.first_name(),link));

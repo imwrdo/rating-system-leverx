@@ -1,4 +1,4 @@
-package org.leverx.ratingapp.service;
+package org.leverx.ratingapp.service.auth;
 
 import org.leverx.ratingapp.repository.ConfirmationTokenRepository;
 import org.leverx.ratingapp.entity.token.ConfirmationToken;

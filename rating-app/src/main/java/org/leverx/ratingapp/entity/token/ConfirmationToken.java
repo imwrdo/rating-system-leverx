@@ -1,8 +1,7 @@
 package org.leverx.ratingapp.entity.token;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.leverx.ratingapp.entity.User;
 
 import java.time.LocalDateTime;
@@ -10,6 +9,9 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @Entity
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "tokens")
 public class ConfirmationToken {
 
@@ -36,17 +38,4 @@ public class ConfirmationToken {
     )
     private User user;
 
-    // Add default constructor
-    public ConfirmationToken() {
-    }
-
-    public ConfirmationToken(String token,
-                             LocalDateTime createDateTime,
-                             LocalDateTime expiryDateTime,
-                             User user) {
-        this.token = token;
-        this.createDateTime = createDateTime;
-        this.expiryDateTime = expiryDateTime;
-        this.user = user;
-    }
 }

@@ -1,6 +1,4 @@
-package org.leverx.ratingapp.dto;
-
-import lombok.Getter;
+package org.leverx.ratingapp.dto.auth;
 
 
 public record RegistrationRequestDTO(String first_name, String last_name, String password, String email) {

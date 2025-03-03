@@ -1,10 +1,9 @@
 package org.leverx.ratingapp.controller;
 
-import lombok.RequiredArgsConstructor;
-import org.leverx.ratingapp.dto.AuthenticationRequestDTO;
-import org.leverx.ratingapp.dto.AuthenticationResponse;
-import org.leverx.ratingapp.dto.RegistrationRequestDTO;
-import org.leverx.ratingapp.service.AuthenticationAndRegistrationService;
+import org.leverx.ratingapp.dto.auth.AuthenticationRequestDTO;
+import org.leverx.ratingapp.dto.auth.AuthenticationResponse;
+import org.leverx.ratingapp.dto.auth.RegistrationRequestDTO;
+import org.leverx.ratingapp.service.auth.AuthenticationAndRegistrationService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,8 +22,10 @@ public class RegistrationController {
     }
     @GetMapping(path = "confirm")
     public String confirm(@RequestParam("token") String token){
+
         return service.confirmToken(token);
     }
+
     @PostMapping("authenticate")
     public ResponseEntity<AuthenticationResponse> authenticate(
             @RequestBody AuthenticationRequestDTO request){

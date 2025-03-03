@@ -1,4 +1,4 @@
-package org.leverx.ratingapp.service;
+package org.leverx.ratingapp.service.auth;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.Claims;

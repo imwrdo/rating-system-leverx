@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import org.leverx.ratingapp.entity.User;
 import org.leverx.ratingapp.repository.UserRepository;
 import org.leverx.ratingapp.entity.token.ConfirmationToken;
+import org.leverx.ratingapp.service.auth.ConfirmationTokenService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -42,30 +43,6 @@ public class UserService implements UserDetailsService {
                                 .format(USER_NOT_FOUND_MSG,email)));
     }
 
-    public String signUpUser(User user) {
-        boolean userExists = userRepository.findByEmail(user.getEmail())
-                .isPresent();
-        if(userExists) {
-            throw new IllegalArgumentException(String
-                    .format("User with email %s already exists", user.getEmail()));
-        }
-        String encodedPassword = passwordEncoder
-                .encode(user.getPassword());
-        user.setPassword(encodedPassword);
-        userRepository.save(user);
-        // TODO: Send confirmation token
-        String token = UUID.randomUUID().toString();
-        ConfirmationToken confirmationToken = new ConfirmationToken(
-                token,
-                LocalDateTime.now(),
-                LocalDateTime.now().plusMinutes(15),
-                user
-        );
-        confirmationTokenService.saveConfirmationToken(confirmationToken);
-
-        // TODO: SEND EMAIL
-        return token;
-    }
 
     public void enableUser(String email) {
         userRepository.enableUser(email);

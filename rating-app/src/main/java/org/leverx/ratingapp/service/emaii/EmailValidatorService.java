@@ -1,4 +1,4 @@
-package org.leverx.ratingapp.service;
+package org.leverx.ratingapp.service.emaii;
 
 import org.springframework.stereotype.Service;
 import java.util.function.Predicate;
