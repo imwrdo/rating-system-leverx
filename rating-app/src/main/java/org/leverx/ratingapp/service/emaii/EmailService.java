@@ -30,7 +30,7 @@ public class EmailService implements EmailSender {
             helper.setText(email, true);
             helper.setTo(to);
             helper.setSubject("Confirm your email");
-            helper.setFrom("admin@ratix.com");
+            helper.setFrom("nasznetflixgdansk@gmail.com");
             mailSender.send(message);
         }catch(MessagingException e){
             LOGGER.error("Failed to send email ", e);
