@@ -1,4 +1,4 @@
-package org.leverx.ratingapp.security.config;
+package org.leverx.ratingapp.security;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

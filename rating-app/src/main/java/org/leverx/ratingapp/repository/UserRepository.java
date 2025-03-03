@@ -5,7 +5,6 @@ import org.leverx.ratingapp.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -14,9 +13,11 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByEmail(String email);
 
+    boolean existsByEmail(String email);
+
     @Transactional
     @Modifying
     @Query("UPDATE User a " +
             "SET a.is_activated = TRUE WHERE a.email = ?1")
-    int enableUser(String email);
+    void enableUser(String email);
 }

@@ -9,7 +9,7 @@ import org.leverx.ratingapp.entity.User;
 import org.leverx.ratingapp.entity.token.ConfirmationToken;
 import org.leverx.ratingapp.repository.UserRepository;
 import org.leverx.ratingapp.service.UserService;
-import org.leverx.ratingapp.service.emaii.EmailSender;
+import org.leverx.ratingapp.service.emaii.interfaces.EmailSender;
 import org.leverx.ratingapp.service.emaii.EmailValidatorService;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -73,8 +73,14 @@ public class AuthenticationAndRegistrationService {
                   request.getPassword()
           )
         );
-        var user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new IllegalArgumentException("Invalid email"));
+        User user = userRepository.findByEmail(request.getEmail())
+                .filter(User::getIs_activated)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        userRepository.existsByEmail(request.getEmail())
+                                ? "User is not activated"
+                                : "Invalid email"
+                ));
+
         var jwtToken = jwtService.generateToken(user);
         return AuthenticationResponse
                 .builder()

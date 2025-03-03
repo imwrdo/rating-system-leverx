@@ -2,6 +2,7 @@ package org.leverx.ratingapp.service.emaii;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
+import org.leverx.ratingapp.service.emaii.interfaces.EmailSender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.mail.javamail.JavaMailSender;
