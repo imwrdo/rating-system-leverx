@@ -40,22 +40,6 @@ public class ConfirmationToken {
     public ConfirmationToken() {
     }
 
-    public LocalDateTime getConfirmationDateTime() {
-        return confirmationDateTime;
-    }
-
-    public LocalDateTime getExpiryDateTime() {
-        return expiryDateTime;
-    }
-
-    public void setConfirmationDateTime(LocalDateTime confirmationDateTime) {
-        this.confirmationDateTime = confirmationDateTime;
-    }
-
-    public User getUser() {
-        return user;
-    }
-
     public ConfirmationToken(String token,
                              LocalDateTime createDateTime,
                              LocalDateTime expiryDateTime,

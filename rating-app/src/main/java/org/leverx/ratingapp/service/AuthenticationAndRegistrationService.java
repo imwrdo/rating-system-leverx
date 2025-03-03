@@ -1,10 +1,16 @@
 package org.leverx.ratingapp.service;
 
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+import org.leverx.ratingapp.dto.AuthenticationRequestDTO;
+import org.leverx.ratingapp.dto.AuthenticationResponse;
 import org.leverx.ratingapp.dto.RegistrationRequestDTO;
 import org.leverx.ratingapp.entity.User;
 import org.leverx.ratingapp.entity.token.ConfirmationToken;
-import org.leverx.ratingapp.repository.ConfirmationTokenRepository;
+import org.leverx.ratingapp.repository.UserRepository;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import org.leverx.ratingapp.enums.Role;
@@ -12,41 +18,56 @@ import org.leverx.ratingapp.enums.Role;
 import java.time.LocalDateTime;
 
 @Service
-public class RegistrationService {
+@RequiredArgsConstructor
+public class AuthenticationAndRegistrationService {
     private final EmailValidatorService emailValidatorService;
-    private final UserService userService;
     private final ConfirmationTokenService confirmationTokenService;
     private final EmailSender emailSender;
+    private final BCryptPasswordEncoder passwordEncoder;
+    private final UserRepository userRepository;
+    private final UserService userService;
+    private final JwtService jwtService;
+    private final AuthenticationManager authenticationManager;
 
-    public RegistrationService(EmailValidatorService emailValidatorService,
-                               UserService userService,
-                               ConfirmationTokenService confirmationTokenService,
-                               EmailSender emailSender) {
-        this.emailValidatorService = emailValidatorService;
-        this.userService = userService;
-        this.confirmationTokenService = confirmationTokenService;
-        this.emailSender = emailSender;
-    }
-
-    public String register(RegistrationRequestDTO registrationRequestDTO) {
+    public AuthenticationResponse register(RegistrationRequestDTO registrationRequestDTO) {
         boolean isValidEmail = emailValidatorService
                 .test(registrationRequestDTO.email());
         if(!isValidEmail) {
             throw new IllegalArgumentException("Invalid email");
         }
-        String token = userService.signUpUser(
-                new User(
-                        registrationRequestDTO.first_name(),
-                        registrationRequestDTO.last_name(),
-                        registrationRequestDTO.password(),
-                        registrationRequestDTO.email(),
-                        Role.SELLER
-                )
-                );
-        String link = "http://localhost:8080/auth/confirm?token="+token;
+        var user = User.builder()
+                .first_name(registrationRequestDTO.first_name())
+                .last_name(registrationRequestDTO.last_name())
+                .email(registrationRequestDTO.email())
+                .password(passwordEncoder
+                        .encode(registrationRequestDTO.password()))
+                .role(Role.SELLER)
+                .build();
+        userRepository.save(user);
+        var jwtToken = jwtService.generateToken(user);
+        String link = "http://localhost:8080/auth/confirm?token="+jwtToken;
         emailSender.send(registrationRequestDTO.email(),
                 buildEmail(registrationRequestDTO.first_name(),link));
-        return token;
+
+        return AuthenticationResponse.builder()
+                .token(jwtToken)
+                .build();
+    }
+
+    public AuthenticationResponse authenticate(AuthenticationRequestDTO request) {
+        authenticationManager.authenticate(
+          new UsernamePasswordAuthenticationToken(
+                  request.getEmail(),
+                  request.getPassword()
+          )
+        );
+        var user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new IllegalArgumentException("Invalid email"));
+        var jwtToken = jwtService.generateToken(user);
+        return AuthenticationResponse
+                .builder()
+                .token(jwtToken)
+                .build();
     }
 
     @Transactional
@@ -73,6 +94,8 @@ public class RegistrationService {
 
         return "confirmed";
     }
+
+
 
     private String buildEmail(String name, String link) {
         return "<div style=\"font-family:Helvetica,Arial,sans-serif;font-size:16px;margin:0;color:#0b0c0c\">\n" +
@@ -142,4 +165,6 @@ public class RegistrationService {
                 "\n" +
                 "</div></div>";
     }
+
+
 }

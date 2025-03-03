@@ -10,12 +10,14 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
+import lombok.Builder;
 
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 @Table(name="users")
 public class User implements UserDetails {
 
@@ -47,13 +49,6 @@ public class User implements UserDetails {
     @Column(name="role", nullable = false,updatable = false)
     private Role role;
 
-    public User(String first_name, String last_name, String password, String email, Role role) {
-        this.first_name = first_name;
-        this.last_name = last_name;
-        this.password = password;
-        this.email = email;
-        this.role = role;
-    }
 
     @PrePersist
     protected void onCreate() {
@@ -74,14 +69,7 @@ public class User implements UserDetails {
     public String getPassword() {
         return password;
     }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
+    
 
     public void activateUser() {
         is_activated = true;
