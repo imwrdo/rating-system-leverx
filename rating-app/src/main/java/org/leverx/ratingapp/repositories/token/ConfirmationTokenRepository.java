@@ -1,4 +1,4 @@
-package org.leverx.ratingapp.repositories;
+package org.leverx.ratingapp.repositories.token;
 
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;

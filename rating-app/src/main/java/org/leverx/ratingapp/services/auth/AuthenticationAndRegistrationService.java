@@ -3,7 +3,7 @@ package org.leverx.ratingapp.services.auth;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.leverx.ratingapp.dtos.auth.AuthenticationRequestDTO;
-import org.leverx.ratingapp.dtos.auth.AuthenticationResponse;
+import org.leverx.ratingapp.dtos.auth.AuthenticationResponseDTO;
 import org.leverx.ratingapp.dtos.auth.RegistrationRequestDTO;
 import org.leverx.ratingapp.entities.User;
 import org.leverx.ratingapp.repositories.UserRepository;
@@ -29,7 +29,7 @@ public class AuthenticationAndRegistrationService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
 
-    public AuthenticationResponse register(RegistrationRequestDTO registrationRequestDTO) {
+    public AuthenticationResponseDTO register(RegistrationRequestDTO registrationRequestDTO) {
         boolean isValidEmail = emailValidatorService.test(registrationRequestDTO.email());
         if(!isValidEmail) {
             throw new IllegalArgumentException("Invalid email");
@@ -55,12 +55,12 @@ public class AuthenticationAndRegistrationService {
         emailSender.send(registrationRequestDTO.email(),
                 buildEmail(registrationRequestDTO.first_name(), link));
 
-        return AuthenticationResponse.builder()
+        return AuthenticationResponseDTO.builder()
                 .token(jwtToken)
                 .build();
     }
 
-    public AuthenticationResponse authenticate(AuthenticationRequestDTO request) {
+    public AuthenticationResponseDTO authenticate(AuthenticationRequestDTO request) {
         authenticationManager.authenticate(
           new UsernamePasswordAuthenticationToken(
                   request.getEmail(),
@@ -76,7 +76,7 @@ public class AuthenticationAndRegistrationService {
                 ));
 
         var jwtToken = jwtService.generateToken(user);
-        return AuthenticationResponse
+        return AuthenticationResponseDTO
                 .builder()
                 .token(jwtToken)
                 .build();
