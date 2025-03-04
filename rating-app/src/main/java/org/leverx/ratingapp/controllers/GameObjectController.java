@@ -25,4 +25,10 @@ public class GameObjectController {
     public ResponseEntity<List<GameObject>> getAll() {
         return ResponseEntity.ok(service.getAll());
     }
+
+    @PutMapping(path = "{id}")
+    public ResponseEntity<GameObject> update(@PathVariable Long id,
+                                             @RequestBody GameObjectDTO gameObject) {
+        return ResponseEntity.ok(service.update(id,gameObject));
+    }
 }
