@@ -1,13 +1,11 @@
-package org.leverx.ratingapp.service;
+package org.leverx.ratingapp.services;
 
 import lombok.AllArgsConstructor;
-import org.leverx.ratingapp.repository.UserRepository;
-import org.leverx.ratingapp.service.auth.ConfirmationTokenService;
+import org.leverx.ratingapp.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 

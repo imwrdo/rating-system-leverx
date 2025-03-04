@@ -1,15 +1,15 @@
-package org.leverx.ratingapp.service.auth;
+package org.leverx.ratingapp.services.auth;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.leverx.ratingapp.dto.auth.AuthenticationRequestDTO;
-import org.leverx.ratingapp.dto.auth.AuthenticationResponse;
-import org.leverx.ratingapp.dto.auth.RegistrationRequestDTO;
-import org.leverx.ratingapp.entity.User;
-import org.leverx.ratingapp.repository.UserRepository;
-import org.leverx.ratingapp.service.UserService;
-import org.leverx.ratingapp.service.email.interfaces.EmailSender;
-import org.leverx.ratingapp.service.email.EmailValidatorService;
+import org.leverx.ratingapp.dtos.auth.AuthenticationRequestDTO;
+import org.leverx.ratingapp.dtos.auth.AuthenticationResponse;
+import org.leverx.ratingapp.dtos.auth.RegistrationRequestDTO;
+import org.leverx.ratingapp.entities.User;
+import org.leverx.ratingapp.repositories.UserRepository;
+import org.leverx.ratingapp.services.UserService;
+import org.leverx.ratingapp.services.email.interfaces.EmailSender;
+import org.leverx.ratingapp.services.email.EmailValidatorService;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;

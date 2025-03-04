@@ -1,4 +1,4 @@
-package org.leverx.ratingapp.repository;
+package org.leverx.ratingapp.repositories;
 
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;

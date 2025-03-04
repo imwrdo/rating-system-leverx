@@ -1,7 +1,7 @@
-package org.leverx.ratingapp.repository;
+package org.leverx.ratingapp.repositories;
 
 import jakarta.transaction.Transactional;
-import org.leverx.ratingapp.entity.User;
+import org.leverx.ratingapp.entities.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;

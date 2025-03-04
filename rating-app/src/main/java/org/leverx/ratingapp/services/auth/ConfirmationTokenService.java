@@ -1,6 +1,6 @@
-package org.leverx.ratingapp.service.auth;
+package org.leverx.ratingapp.services.auth;
 
-import org.leverx.ratingapp.repository.ConfirmationTokenRepository;
+import org.leverx.ratingapp.repositories.ConfirmationTokenRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;

@@ -1,9 +1,9 @@
-package org.leverx.ratingapp.controller;
+package org.leverx.ratingapp.controllers;
 
-import org.leverx.ratingapp.dto.auth.AuthenticationRequestDTO;
-import org.leverx.ratingapp.dto.auth.AuthenticationResponse;
-import org.leverx.ratingapp.dto.auth.RegistrationRequestDTO;
-import org.leverx.ratingapp.service.auth.AuthenticationAndRegistrationService;
+import org.leverx.ratingapp.dtos.auth.AuthenticationRequestDTO;
+import org.leverx.ratingapp.dtos.auth.AuthenticationResponse;
+import org.leverx.ratingapp.dtos.auth.RegistrationRequestDTO;
+import org.leverx.ratingapp.services.auth.AuthenticationAndRegistrationService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

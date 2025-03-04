@@ -1,4 +1,4 @@
-package org.leverx.ratingapp.entity;
+package org.leverx.ratingapp.entities;
 
 
 import jakarta.persistence.*;

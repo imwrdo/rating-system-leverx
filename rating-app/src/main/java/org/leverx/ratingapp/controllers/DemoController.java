@@ -1,4 +1,4 @@
-package org.leverx.ratingapp.controller;
+package org.leverx.ratingapp.controllers;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

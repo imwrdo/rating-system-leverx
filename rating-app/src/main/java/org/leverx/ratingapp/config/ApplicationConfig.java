@@ -1,6 +1,6 @@
 package org.leverx.ratingapp.config;
 
-import org.leverx.ratingapp.repository.UserRepository;
+import org.leverx.ratingapp.repositories.UserRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;

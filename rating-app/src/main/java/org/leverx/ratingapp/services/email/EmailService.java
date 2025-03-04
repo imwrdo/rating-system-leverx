@@ -1,8 +1,8 @@
-package org.leverx.ratingapp.service.email;
+package org.leverx.ratingapp.services.email;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
-import org.leverx.ratingapp.service.email.interfaces.EmailSender;
+import org.leverx.ratingapp.services.email.interfaces.EmailSender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.mail.javamail.JavaMailSender;

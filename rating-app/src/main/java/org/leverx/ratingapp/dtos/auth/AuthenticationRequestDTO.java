@@ -1,4 +1,4 @@
-package org.leverx.ratingapp.dto.auth;
+package org.leverx.ratingapp.dtos.auth;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

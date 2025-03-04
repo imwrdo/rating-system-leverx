@@ -1,4 +1,4 @@
-package org.leverx.ratingapp.dto;
+package org.leverx.ratingapp.dtos;
 
 import lombok.Data;
 import org.leverx.ratingapp.enums.Role;
