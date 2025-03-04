@@ -18,12 +18,22 @@ import java.util.Optional;
 public class GameObjectService {
     private GameObjectRepository gameObjectRepository;
 
-    public GameObject create(GameObjectDTO gameObject) {
+    private User getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        var currentUser = Optional.ofNullable(authentication)
+        return Optional.ofNullable(authentication)
                 .filter(auth -> auth.getPrincipal() instanceof UserDetails)
                 .map(auth -> (User) auth.getPrincipal())
                 .orElseThrow(() -> new RuntimeException("Invalid authentication"));
+    }
+    private void authorizeUser(GameObject gameObject, User currentUser) {
+        if (!gameObject.getUser().getId().equals(currentUser.getId())) {
+            throw new RuntimeException("You are not authorized to perform this action");
+        }
+    }
+
+
+    public GameObject create(GameObjectDTO gameObject) {
+        User currentUser = getCurrentUser();
 
         var game = GameObject.builder()
                 .title(gameObject.getTitle())
@@ -40,13 +50,29 @@ public class GameObjectService {
     }
 
     public GameObject update(Long id, GameObjectDTO gameObject) {
+        User currentUser = getCurrentUser();
+
         return gameObjectRepository.findById(id)
                 .map(existingGame -> {
+                    authorizeUser(existingGame, currentUser);
                     existingGame.setTitle(gameObject.getTitle());
                     existingGame.setText(gameObject.getText());
                     gameObjectRepository.save(existingGame);
                     return existingGame;
                 })
                 .orElseThrow(() -> new RuntimeException("Game object not found"));
+    }
+
+    public String delete(Long id) {
+        User currentUser = getCurrentUser();
+
+        gameObjectRepository.findById(id)
+                .map(existingGame -> {
+                    authorizeUser(existingGame, currentUser);
+                    gameObjectRepository.delete(existingGame);
+                    return existingGame;
+                })
+                .orElseThrow(() -> new RuntimeException("Game object not found"));
+        return "Game object deleted";
     }
 }

@@ -31,4 +31,9 @@ public class GameObjectController {
                                              @RequestBody GameObjectDTO gameObject) {
         return ResponseEntity.ok(service.update(id,gameObject));
     }
+
+    @DeleteMapping("{id}")
+    public String delete(@PathVariable Long id) {
+        return service.delete(id);
+    }
 }
