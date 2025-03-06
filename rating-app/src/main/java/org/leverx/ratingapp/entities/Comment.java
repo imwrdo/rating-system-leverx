@@ -19,7 +19,7 @@ public class Comment {
     private Long id;
 
     @Column(name="message", nullable = false)
-    private String title;
+    private String message;
 
     @ManyToOne
     @JoinColumn(
@@ -28,6 +28,14 @@ public class Comment {
             nullable = false
     )
     private User author;
+
+    @ManyToOne
+    @JoinColumn(
+            name = "seller_id",
+            referencedColumnName = "id",
+            nullable = false
+    )
+    private User seller;
 
     @Column(name="created_at", nullable = false)
     private LocalDateTime created_at;

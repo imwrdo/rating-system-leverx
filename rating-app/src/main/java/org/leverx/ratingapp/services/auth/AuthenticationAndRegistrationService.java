@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.leverx.ratingapp.dtos.auth.AuthenticationRequestDTO;
 import org.leverx.ratingapp.dtos.auth.AuthenticationResponseDTO;
 import org.leverx.ratingapp.dtos.auth.RegistrationRequestDTO;
+import org.leverx.ratingapp.entities.GameObject;
 import org.leverx.ratingapp.entities.User;
 import org.leverx.ratingapp.repositories.UserRepository;
 import org.leverx.ratingapp.services.UserService;
@@ -12,10 +13,15 @@ import org.leverx.ratingapp.services.email.interfaces.EmailSender;
 import org.leverx.ratingapp.services.email.EmailValidatorService;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import org.leverx.ratingapp.enums.Role;
+
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -28,6 +34,19 @@ public class AuthenticationAndRegistrationService {
     private final UserService userService;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+
+    public User getCurrentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return Optional.ofNullable(authentication)
+                .filter(auth -> auth.getPrincipal() instanceof UserDetails)
+                .map(auth -> (User) auth.getPrincipal())
+                .orElseThrow(() -> new RuntimeException("Invalid authentication"));
+    }
+    public void authorizeUser(GameObject gameObject, User currentUser) {
+        if (!gameObject.getUser().getId().equals(currentUser.getId())) {
+            throw new RuntimeException("You are not authorized to perform this action");
+        }
+    }
 
     public AuthenticationResponseDTO register(RegistrationRequestDTO registrationRequestDTO) {
         boolean isValidEmail = emailValidatorService.test(registrationRequestDTO.email());
