@@ -1,26 +1,19 @@
 package org.leverx.ratingapp.dtos;
 
-import lombok.Data;
 import org.leverx.ratingapp.enums.Role;
 
 import java.time.LocalDateTime;
 
-@Data
-public class UserDTO {
 
-    private Long id;
+public record UserDTO(
+        Long id,
+        String first_name,
+        String last_name,
+        Boolean is_activated,
+        String password,
+        String email,
+        LocalDateTime created_at,
+        Role role) {
 
-    private String first_name;
 
-    private String last_name;
-
-    private Boolean is_activated;
-
-    private String password;
-
-    private String email;
-
-    private LocalDateTime created_at;
-
-    private Role role;
 }

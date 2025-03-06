@@ -1,23 +1,12 @@
 package org.leverx.ratingapp.dtos.comments;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.leverx.ratingapp.entities.Comment;
-
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Data
 @Builder
-@AllArgsConstructor
-@NoArgsConstructor
-public class CommentResponseDTO {
-    private String message;
-    private String author;
-    private String seller;
-    private String Status;
+public record CommentResponseDTO(String message,String author,String seller,String Status) {
 
     public static List<CommentResponseDTO> mapToCommentResponseDTO(List<Comment> comments){
         return comments.stream()

@@ -1,13 +1,8 @@
 package org.leverx.ratingapp.dtos.auth;
 
-import lombok.*;
+import lombok.Builder;
 
-@Data
 @Builder
-@AllArgsConstructor
-@NoArgsConstructor
-public class AuthenticationResponseDTO {
-    private String user;
-    private String token;
-    private String Status;
+public record AuthenticationResponseDTO(String user,String token,String Status) {
+
 }

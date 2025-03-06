@@ -84,14 +84,14 @@ public class AuthenticationAndRegistrationService {
     public AuthenticationResponseDTO authenticate(AuthenticationRequestDTO request) {
         authenticationManager.authenticate(
           new UsernamePasswordAuthenticationToken(
-                  request.getEmail(),
-                  request.getPassword()
+                  request.email(),
+                  request.password()
           )
         );
-        User user = userRepository.findByEmail(request.getEmail())
+        User user = userRepository.findByEmail(request.email())
                 .filter(User::getIs_activated)
                 .orElseThrow(() -> new IllegalArgumentException(
-                        userRepository.existsByEmail(request.getEmail())
+                        userRepository.existsByEmail(request.password())
                                 ? "User is not activated"
                                 : "Invalid email"
                 ));
@@ -99,7 +99,7 @@ public class AuthenticationAndRegistrationService {
         var jwtToken = jwtService.generateToken(user);
         return AuthenticationResponseDTO
                 .builder()
-                .user(request.getEmail())
+                .user(request.email())
                 .token(jwtToken)
                 .Status("You are authenticated")
                 .build();
