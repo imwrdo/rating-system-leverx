@@ -1,4 +1,4 @@
-package org.leverx.ratingapp.dtos;
+package org.leverx.ratingapp.dtos.comments;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,9 +9,6 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class CommentResponseDTO {
+public class CommentRequestDTO {
     private String message;
-    private String author;
-    private String seller;
-    private String Status;
 }
