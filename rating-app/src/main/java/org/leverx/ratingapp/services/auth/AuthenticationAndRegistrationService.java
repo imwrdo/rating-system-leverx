@@ -56,7 +56,9 @@ public class AuthenticationAndRegistrationService {
                 buildEmail(registrationRequestDTO.first_name(), link));
 
         return AuthenticationResponseDTO.builder()
+                .user(registrationRequestDTO.email())
                 .token(jwtToken)
+                .Status("Your registration is in progress")
                 .build();
     }
 
@@ -78,7 +80,9 @@ public class AuthenticationAndRegistrationService {
         var jwtToken = jwtService.generateToken(user);
         return AuthenticationResponseDTO
                 .builder()
+                .user(request.getEmail())
                 .token(jwtToken)
+                .Status("You are authenticated")
                 .build();
     }
 
