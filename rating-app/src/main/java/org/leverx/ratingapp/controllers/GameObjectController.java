@@ -3,7 +3,7 @@ package org.leverx.ratingapp.controllers;
 import lombok.AllArgsConstructor;
 import org.leverx.ratingapp.dtos.gameobject.GameObjectRequestDTO;
 import org.leverx.ratingapp.dtos.gameobject.GameObjectResponseDTO;
-import org.leverx.ratingapp.services.GameObjectService;
+import org.leverx.ratingapp.services.gameobject.GameObjectService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

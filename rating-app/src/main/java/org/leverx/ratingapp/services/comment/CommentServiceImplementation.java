@@ -1,5 +1,6 @@
-package org.leverx.ratingapp.services;
+package org.leverx.ratingapp.services.comment;
 
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.leverx.ratingapp.dtos.comments.CommentRequestDTO;
 import org.leverx.ratingapp.dtos.comments.CommentResponseDTO;
@@ -7,7 +8,7 @@ import org.leverx.ratingapp.entities.Comment;
 import org.leverx.ratingapp.entities.User;
 import org.leverx.ratingapp.repositories.CommentRepository;
 import org.leverx.ratingapp.repositories.UserRepository;
-import org.leverx.ratingapp.services.auth.AuthenticationAndRegistrationService;
+import org.leverx.ratingapp.services.auth.AuthenticationAndRegistrationServiceImplementation;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,11 +16,13 @@ import java.util.List;
 
 @Service
 @AllArgsConstructor
-public class CommentService {
+@Transactional
+public class CommentServiceImplementation implements CommentService {
     private CommentRepository commentRepository;
-    private AuthenticationAndRegistrationService authAndRegService;
+    private AuthenticationAndRegistrationServiceImplementation authAndRegService;
     private UserRepository userRepository;
 
+    @Override
     public CommentResponseDTO create(Long sellerId, CommentRequestDTO commentObject) {
         User currentUser = authAndRegService.getCurrentUser();
 
@@ -42,6 +45,7 @@ public class CommentService {
                 .build();
     }
 
+    @Override
     public List<CommentResponseDTO> getAll(Long sellerId) {
 
         userRepository.findById(sellerId)
@@ -53,6 +57,7 @@ public class CommentService {
         return CommentResponseDTO.mapToCommentResponseDTO(comments);
     }
 
+    @Override
     public CommentResponseDTO getComment(Long sellerId, Long commentId) {
 
         var comment =  commentRepository.findByIdAndSellerId(commentId,sellerId)
@@ -67,6 +72,7 @@ public class CommentService {
                 .build();
     }
 
+    @Override
     public String delete(Long sellerId, Long commentId) {
         userRepository.findById(sellerId)
                 .orElseThrow(() ->
@@ -87,6 +93,8 @@ public class CommentService {
         return "Your comment is deleted successfully";
     }
 
+
+    @Override
     public CommentResponseDTO update(Long sellerId, Long commentId, CommentRequestDTO commentObject) {
 
         User currentUser = authAndRegService.getCurrentUser();

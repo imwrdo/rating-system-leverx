@@ -1,4 +1,4 @@
-package org.leverx.ratingapp.services.auth;
+package org.leverx.ratingapp.services.auth.jwt;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.Claims;
@@ -15,27 +15,30 @@ import java.util.Map;
 import java.util.function.Function;
 
 @Service
-public class JwtService {
+public class JwtServiceImplementation implements JwtService {
 
     private static final String SECRET_KEY = "HpiYKXbeLICG5S29p/lAg5eGQ0FcaeVFB9d0pVF5pfw=";
 
+    @Override
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
     }
 
+    @Override
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = extractAllClaims(token);
         return claimsResolver.apply(claims);
     }
 
+    @Override
     public String generateToken(UserDetails userDetails) {
         return generateToken(new HashMap<>(), userDetails);
     }
 
+    @Override
     public String generateToken(
             Map<String, Object> extraClaims,
-            UserDetails userDetails
-    ) {
+            UserDetails userDetails) {
         return Jwts
                 .builder()
                 .setClaims(extraClaims)
@@ -46,6 +49,7 @@ public class JwtService {
                 .compact();
     }
 
+    @Override
     public boolean isTokenValid(String token, UserDetails userDetails) {
         final String username = extractUsername(token);
         return username.equals(userDetails.getUsername())
@@ -56,10 +60,12 @@ public class JwtService {
         return extractExpiration(token).before(new Date());
     }
 
+
     private Date extractExpiration(String token) {
         return extractClaim(token, Claims::getExpiration);
     }
 
+    @Override
     public Claims extractAllClaims(String token) {
         return Jwts
                 .parserBuilder()

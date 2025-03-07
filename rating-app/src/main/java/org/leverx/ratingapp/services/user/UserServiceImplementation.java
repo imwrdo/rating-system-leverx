@@ -1,5 +1,6 @@
-package org.leverx.ratingapp.services;
+package org.leverx.ratingapp.services.user;
 
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.leverx.ratingapp.repositories.UserRepository;
 
@@ -10,8 +11,9 @@ import org.springframework.stereotype.Service;
 
 
 @Service
+@Transactional
 @AllArgsConstructor
-public class UserService implements UserDetailsService {
+public class UserServiceImplementation implements UserDetailsService, UserService {
     private UserRepository userRepository;
 
     @Override
@@ -25,6 +27,7 @@ public class UserService implements UserDetailsService {
     }
 
 
+    @Override
     public void enableUser(String email) {
         userRepository.enableUser(email);
     }
