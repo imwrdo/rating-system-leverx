@@ -6,11 +6,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Builder
-public record CommentResponseDTO(String message,String author,String seller,String Status) {
+public record CommentResponseDTO(Long id,String message,String author,String seller,String Status) {
 
     public static List<CommentResponseDTO> mapToCommentResponseDTO(List<Comment> comments){
         return comments.stream()
                 .map(comment -> CommentResponseDTO.builder()
+                        .id(comment.getId())
                         .message(comment.getMessage())
                         .author(comment.getAuthor().getEmail())
                         .seller(comment.getSeller().getEmail())

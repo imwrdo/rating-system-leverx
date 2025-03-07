@@ -23,8 +23,8 @@ public class GameObjectService {
         User currentUser = authAndRegService.getCurrentUser();
 
         var game = GameObject.builder()
-                .title(gameObject.getTitle())
-                .text(gameObject.getText())
+                .title(gameObject.title())
+                .text(gameObject.text())
                 .user(currentUser)
                 .build();
         gameObjectRepository.save(game);
@@ -42,8 +42,8 @@ public class GameObjectService {
         return gameObjectRepository.findById(id)
                 .map(existingGame -> {
                     authAndRegService.authorizeUser(existingGame, currentUser);
-                    existingGame.setTitle(gameObject.getTitle());
-                    existingGame.setText(gameObject.getText());
+                    existingGame.setTitle(gameObject.title());
+                    existingGame.setText(gameObject.text());
                     gameObjectRepository.save(existingGame);
                     return existingGame;
                 })

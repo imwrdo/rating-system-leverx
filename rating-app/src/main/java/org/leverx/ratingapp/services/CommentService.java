@@ -11,6 +11,7 @@ import org.leverx.ratingapp.services.auth.AuthenticationAndRegistrationService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @AllArgsConstructor
@@ -25,12 +26,13 @@ public class CommentService {
                 .orElseThrow(() ->
                         new RuntimeException(String.format("Seller with id %d not found",sellerId)));
         var comment = Comment.builder()
-                .message(commentObject.getMessage())
+                .message(commentObject.message())
                 .author(currentUser)
                 .seller(seller)
                 .build();
         commentRepository.save(comment);
         return CommentResponseDTO.builder()
+                .id(comment.getId())
                 .message(comment.getMessage())
                 .author(comment.getAuthor().getEmail())
                 .seller(comment.getSeller().getEmail())
@@ -48,5 +50,53 @@ public class CommentService {
         return CommentResponseDTO.mapToCommentResponseDTO(comments);
 
 
+    }
+
+    public String delete(Long sellerId, Long commentId) {
+        userRepository.findById(sellerId)
+                .orElseThrow(() ->
+                        new RuntimeException(String.format("Seller with id %d not found",sellerId)));
+        commentRepository.findById(commentId)
+                .orElseThrow(()->
+                        new RuntimeException(String.format("Comment with id %d not found",commentId)));
+
+        User currentUser = authAndRegService.getCurrentUser();
+
+        Comment existingComment = commentRepository.findByIdAndSellerId(commentId,sellerId)
+                .orElseThrow(() ->
+                        new RuntimeException(String.format("Comment for seller %d and id %d not found",sellerId,commentId)));
+
+        if (!existingComment.getAuthor().getId().equals(currentUser.getId())) {
+            throw new RuntimeException("You are not authorized to perform this action");
+        }
+        commentRepository.delete(existingComment);
+
+        return "Your comment is deleted successfully";
+    }
+
+    public CommentResponseDTO update(Long sellerId, CommentRequestDTO commentObject) {
+        User currentUser = authAndRegService.getCurrentUser();
+        userRepository.findById(sellerId)
+                .orElseThrow(() ->
+                        new RuntimeException(String.format("Seller with id %d not found",sellerId)));
+
+        var comment =  commentRepository.findBySellerId(sellerId)
+                .map(existingComment -> {
+                    if (!existingComment.getAuthor().getId().equals(currentUser.getId())) {
+                        throw new RuntimeException("You are not authorized to perform this action");
+                    }
+                    existingComment.setMessage(commentObject.message());
+
+                    commentRepository.save(existingComment);
+                    return existingComment;
+                })
+                .orElseThrow(() -> new RuntimeException("Game object not found"));
+        return CommentResponseDTO.builder()
+                .id(comment.getId())
+                .message(comment.getMessage())
+                .author(comment.getAuthor().getEmail())
+                .seller(comment.getSeller().getEmail())
+                .Status("Comment is modified")
+                .build();
     }
 }

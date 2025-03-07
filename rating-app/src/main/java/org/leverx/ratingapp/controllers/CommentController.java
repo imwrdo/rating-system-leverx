@@ -30,6 +30,22 @@ public class CommentController {
         return ResponseEntity.ok(commentService.getAll(seller_id));
     }
 
+    @DeleteMapping(path = "{seller_id}/comments/{comment_id}")
+    public ResponseEntity<String> delete(
+            @PathVariable Long seller_id,
+            @PathVariable Long comment_id
+    ){
+        return ResponseEntity.ok(commentService.delete(seller_id,comment_id));
+    }
+
+
+    @PutMapping(path = "{seller_id}/comments")
+    public ResponseEntity<CommentResponseDTO> update(
+            @PathVariable Long seller_id,
+            @RequestBody CommentRequestDTO commentObject
+    ){
+        return ResponseEntity.ok(commentService.update(seller_id,commentObject));
+    }
 
 
 }
