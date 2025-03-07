@@ -3,6 +3,7 @@ package org.leverx.ratingapp.services.email;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.leverx.ratingapp.services.email.interfaces.EmailSender;
+import org.leverx.ratingapp.exceptions.InvalidOperationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -35,7 +36,7 @@ public class EmailService implements EmailSender {
             mailSender.send(message);
         }catch(MessagingException e){
             LOGGER.error("Failed to send email ", e);
-            throw new IllegalStateException("Failed to send email");
+            throw new InvalidOperationException("Failed to send email");
         }
     }
 

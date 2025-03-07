@@ -24,6 +24,7 @@ public class CommentServiceImplementation implements CommentService {
 
     @Override
     public CommentResponseDTO create(Long sellerId, CommentRequestDTO commentObject) {
+
         User currentUser = authAndRegService.getCurrentUser();
 
         User seller = userRepository.findById(sellerId)
@@ -35,6 +36,7 @@ public class CommentServiceImplementation implements CommentService {
                 .author(currentUser)
                 .seller(seller)
                 .build();
+
         commentRepository.save(comment);
         return CommentResponseDTO.builder()
                 .id(comment.getId())
@@ -98,13 +100,14 @@ public class CommentServiceImplementation implements CommentService {
     public CommentResponseDTO update(Long sellerId, Long commentId, CommentRequestDTO commentObject) {
 
         User currentUser = authAndRegService.getCurrentUser();
+
         userRepository.findById(sellerId)
                 .orElseThrow(() ->
-                        new RuntimeException(String.format("Seller with id %d not found",sellerId)));
+                        new RuntimeException(String.format("Seller with id %d not found", sellerId)));
 
         commentRepository.findById(commentId)
                 .orElseThrow(()->
-                        new RuntimeException(String.format("Comment with id %d not found",commentId)));
+                        new RuntimeException(String.format("Comment with id %d not found", commentId)));
 
         var comment =  commentRepository.findByIdAndSellerId(commentId,sellerId)
                 .map(existingComment -> {

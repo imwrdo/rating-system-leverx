@@ -8,6 +8,7 @@ import org.leverx.ratingapp.dtos.auth.RegistrationRequestDTO;
 import org.leverx.ratingapp.entities.Comment;
 import org.leverx.ratingapp.entities.GameObject;
 import org.leverx.ratingapp.entities.User;
+import org.leverx.ratingapp.exceptions.AccountNotActivatedException;
 import org.leverx.ratingapp.repositories.UserRepository;
 import org.leverx.ratingapp.services.auth.jwt.JwtServiceImplementation;
 import org.leverx.ratingapp.services.auth.token.ConfirmationTokenServiceImplementation;
@@ -23,6 +24,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import org.leverx.ratingapp.enums.Role;
+import org.leverx.ratingapp.exceptions.UnauthorizedException;
+import org.leverx.ratingapp.exceptions.InvalidOperationException;
+import org.leverx.ratingapp.exceptions.ForbiddenException;
 
 import java.util.Optional;
 
@@ -45,7 +49,7 @@ public class AuthenticationAndRegistrationServiceImplementation implements Authe
         return Optional.ofNullable(authentication)
                 .filter(auth -> auth.getPrincipal() instanceof UserDetails)
                 .map(auth -> (User) auth.getPrincipal())
-                .orElseThrow(() -> new RuntimeException("Invalid authentication"));
+                .orElseThrow(() -> new UnauthorizedException("User not authenticated"));
     }
 
     @Override
@@ -57,7 +61,7 @@ public class AuthenticationAndRegistrationServiceImplementation implements Authe
             entityAuthor = gameObject.getUser();
         }
         if (entityAuthor == null || !entityAuthor.getId().equals(currentUser.getId())) {
-            throw new RuntimeException("You are not authorized to perform this action");
+            throw new ForbiddenException("You do not have permission to modify this resource");
         }
     }
 
@@ -65,11 +69,11 @@ public class AuthenticationAndRegistrationServiceImplementation implements Authe
     public AuthenticationResponseDTO register(RegistrationRequestDTO registrationRequestDTO) {
         boolean isValidEmail = emailValidatorService.test(registrationRequestDTO.email());
         if(!isValidEmail) {
-            throw new IllegalArgumentException("Invalid email");
+            throw new InvalidOperationException("Invalid email format");
         }
         
         if (userRepository.existsByEmail(registrationRequestDTO.email())) {
-            throw new IllegalArgumentException("Email already registered");
+            throw new InvalidOperationException("Email already registered");
         }
 
         var user = User.builder()
@@ -105,10 +109,10 @@ public class AuthenticationAndRegistrationServiceImplementation implements Authe
         );
         User user = userRepository.findByEmail(request.email())
                 .filter(User::getIs_activated)
-                .orElseThrow(() -> new IllegalArgumentException(
-                        userRepository.existsByEmail(request.password())
-                                ? "User is not activated"
-                                : "Invalid email"
+                .orElseThrow(() -> new AccountNotActivatedException(
+                        userRepository.existsByEmail(request.email())
+                                ? "Please, activate your account"
+                                : "Please, check your email"
                 ));
 
         var jwtToken = jwtService.generateToken(user);
@@ -124,14 +128,14 @@ public class AuthenticationAndRegistrationServiceImplementation implements Authe
     public String confirmToken(String token) {
         var userEmail = jwtService.extractUsername(token);
         if (userEmail == null) {
-            throw new IllegalArgumentException("Invalid token");
+            throw new InvalidOperationException("Invalid token");
         }
 
         var storedToken = confirmationTokenService.getConfirmationToken(userEmail)
-                .orElseThrow(() -> new IllegalArgumentException("Token not found or expired"));
+                .orElseThrow(() -> new InvalidOperationException("Token not found or expired"));
 
         if (!token.equals(storedToken)) {
-            throw new IllegalArgumentException("Invalid token");
+            throw new InvalidOperationException("Invalid token");
         }
 
         userServiceImplementation.enableUser(userEmail);
