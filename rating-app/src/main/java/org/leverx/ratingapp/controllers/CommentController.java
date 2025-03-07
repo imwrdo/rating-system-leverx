@@ -31,6 +31,13 @@ public class CommentController {
         return ResponseEntity.ok(commentService.getAll(seller_id));
     }
 
+    @GetMapping(path ="{seller_id}/comments/{comment_id}")
+    public ResponseEntity<CommentResponseDTO> getComment(
+            @PathVariable Long seller_id,
+            @PathVariable Long comment_id){
+        return ResponseEntity.ok(commentService.getComment(seller_id,comment_id));
+    }
+
     @DeleteMapping(path = "{seller_id}/comments/{comment_id}")
     public ResponseEntity<String> delete(
             @PathVariable Long seller_id,
@@ -40,12 +47,13 @@ public class CommentController {
     }
 
 
-    @PutMapping(path = "{seller_id}/comments")
+    @PutMapping(path = "{seller_id}/comments/{comment_id}")
     public ResponseEntity<CommentResponseDTO> update(
             @PathVariable Long seller_id,
+            @PathVariable Long comment_id,
             @RequestBody CommentRequestDTO commentObject){
 
-        return ResponseEntity.ok(commentService.update(seller_id,commentObject));
+        return ResponseEntity.ok(commentService.update(seller_id,comment_id,commentObject));
     }
 
 }

@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.leverx.ratingapp.dtos.auth.AuthenticationRequestDTO;
 import org.leverx.ratingapp.dtos.auth.AuthenticationResponseDTO;
 import org.leverx.ratingapp.dtos.auth.RegistrationRequestDTO;
+import org.leverx.ratingapp.entities.Comment;
 import org.leverx.ratingapp.entities.GameObject;
 import org.leverx.ratingapp.entities.User;
 import org.leverx.ratingapp.repositories.UserRepository;
@@ -42,8 +43,14 @@ public class AuthenticationAndRegistrationService {
                 .map(auth -> (User) auth.getPrincipal())
                 .orElseThrow(() -> new RuntimeException("Invalid authentication"));
     }
-    public void authorizeUser(GameObject gameObject, User currentUser) {
-        if (!gameObject.getUser().getId().equals(currentUser.getId())) {
+    public <T> void authorizeUser(T entity, User currentUser) {
+        User entityAuthor = null;
+        if (entity instanceof Comment comment) {
+            entityAuthor = comment.getAuthor();
+        } else if (entity instanceof GameObject gameObject) {
+            entityAuthor = gameObject.getUser();
+        }
+        if (entityAuthor == null || !entityAuthor.getId().equals(currentUser.getId())) {
             throw new RuntimeException("You are not authorized to perform this action");
         }
     }

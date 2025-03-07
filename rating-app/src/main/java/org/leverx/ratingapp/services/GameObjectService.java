@@ -19,8 +19,6 @@ public class GameObjectService {
     private GameObjectRepository gameObjectRepository;
     private AuthenticationAndRegistrationService authAndRegService;
 
-
-
     public GameObjectResponseDTO create(GameObjectRequestDTO gameObject) {
         User currentUser = authAndRegService.getCurrentUser();
 

@@ -22,9 +22,11 @@ public class CommentService {
 
     public CommentResponseDTO create(Long sellerId, CommentRequestDTO commentObject) {
         User currentUser = authAndRegService.getCurrentUser();
+
         User seller = userRepository.findById(sellerId)
                 .orElseThrow(() ->
                         new RuntimeException(String.format("Seller with id %d not found",sellerId)));
+
         var comment = Comment.builder()
                 .message(commentObject.message())
                 .author(currentUser)
@@ -45,11 +47,24 @@ public class CommentService {
         userRepository.findById(sellerId)
                 .orElseThrow(() ->
                         new RuntimeException(String.format("Seller with id %d not found",sellerId)));
+
         List<Comment> comments = commentRepository.findAllBySellerId(sellerId);
 
         return CommentResponseDTO.mapToCommentResponseDTO(comments);
+    }
 
+    public CommentResponseDTO getComment(Long sellerId, Long commentId) {
 
+        var comment =  commentRepository.findByIdAndSellerId(commentId,sellerId)
+                .orElseThrow(() -> new RuntimeException(String.format("Comment for seller %d and id %d not found",sellerId,commentId)));
+
+        return CommentResponseDTO.builder()
+                .id(comment.getId())
+                .message(comment.getMessage())
+                .author(comment.getAuthor().getEmail())
+                .seller(comment.getSeller().getEmail())
+                .status(comment.getIs_approved()?"Approved":"Pending")
+                .build();
     }
 
     public String delete(Long sellerId, Long commentId) {
@@ -66,31 +81,31 @@ public class CommentService {
                 .orElseThrow(() ->
                         new RuntimeException(String.format("Comment for seller %d and id %d not found",sellerId,commentId)));
 
-        if (!existingComment.getAuthor().getId().equals(currentUser.getId())) {
-            throw new RuntimeException("You are not authorized to perform this action");
-        }
+        authAndRegService.authorizeUser(existingComment,currentUser);
         commentRepository.delete(existingComment);
 
         return "Your comment is deleted successfully";
     }
 
-    public CommentResponseDTO update(Long sellerId, CommentRequestDTO commentObject) {
+    public CommentResponseDTO update(Long sellerId, Long commentId, CommentRequestDTO commentObject) {
+
         User currentUser = authAndRegService.getCurrentUser();
         userRepository.findById(sellerId)
                 .orElseThrow(() ->
                         new RuntimeException(String.format("Seller with id %d not found",sellerId)));
 
-        var comment =  commentRepository.findBySellerId(sellerId)
-                .map(existingComment -> {
-                    if (!existingComment.getAuthor().getId().equals(currentUser.getId())) {
-                        throw new RuntimeException("You are not authorized to perform this action");
-                    }
-                    existingComment.setMessage(commentObject.message());
+        commentRepository.findById(commentId)
+                .orElseThrow(()->
+                        new RuntimeException(String.format("Comment with id %d not found",commentId)));
 
+        var comment =  commentRepository.findByIdAndSellerId(commentId,sellerId)
+                .map(existingComment -> {
+                    authAndRegService.authorizeUser(existingComment,currentUser);
+                    existingComment.setMessage(commentObject.message());
                     commentRepository.save(existingComment);
                     return existingComment;
                 })
-                .orElseThrow(() -> new RuntimeException("Game object not found"));
+                .orElseThrow(() -> new RuntimeException(String.format("Comment for seller %d and id %d not found",sellerId,commentId)));
         return CommentResponseDTO.builder()
                 .id(comment.getId())
                 .message(comment.getMessage())
@@ -99,4 +114,6 @@ public class CommentService {
                 .status("Modified")
                 .build();
     }
+
+
 }
