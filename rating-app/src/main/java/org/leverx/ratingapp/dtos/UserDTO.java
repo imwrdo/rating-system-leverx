@@ -1,7 +1,6 @@
 package org.leverx.ratingapp.dtos;
 
 import org.leverx.ratingapp.enums.Role;
-
 import java.time.LocalDateTime;
 
 

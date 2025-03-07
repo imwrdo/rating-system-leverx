@@ -7,6 +7,7 @@ import org.leverx.ratingapp.services.comment.CommentService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.util.List;
 
 @RestController
@@ -21,7 +22,10 @@ public class CommentController {
             @PathVariable Long seller_id,
             @RequestBody CommentRequestDTO commentObject){
 
-        return ResponseEntity.ok(service.create(seller_id,commentObject));
+        CommentResponseDTO response = service.create(seller_id, commentObject);
+        return ResponseEntity.created(
+                URI.create(String.format("/users/%d/comments/%d", seller_id, response.id()))
+        ).body(response);
     }
 
     @GetMapping(path ="{seller_id}/comments")
@@ -43,7 +47,7 @@ public class CommentController {
             @PathVariable Long seller_id,
             @PathVariable Long comment_id){
 
-        return ResponseEntity.ok(service.delete(seller_id,comment_id));
+        return ResponseEntity.status(202).body(service.delete(seller_id,comment_id));
     }
 
 

@@ -7,6 +7,7 @@ import org.leverx.ratingapp.services.gameobject.GameObjectService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.util.List;
 
 @RestController
@@ -18,7 +19,10 @@ public class GameObjectController {
     @PostMapping
     public ResponseEntity<GameObjectResponseDTO> create(
             @RequestBody GameObjectRequestDTO gameObject) {
-        return ResponseEntity.ok(service.create(gameObject));
+        GameObjectResponseDTO response = service.create(gameObject);
+        return ResponseEntity.created(
+                URI.create(String.format("/object/%d", response.id()))
+        ).body(response);
     }
 
     @GetMapping
@@ -34,6 +38,7 @@ public class GameObjectController {
 
     @DeleteMapping("{id}")
     public ResponseEntity<String> delete(@PathVariable Long id) {
-        return ResponseEntity.ok(service.delete(id));
+
+        return ResponseEntity.status(202).body(service.delete(id));
     }
 }

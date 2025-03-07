@@ -17,9 +17,9 @@ public class RegistrationController {
     @PostMapping(path="register")
     public ResponseEntity<AuthenticationResponseDTO> register(
             @RequestBody RegistrationRequestDTO request){
-
         return ResponseEntity.ok(service.register(request));
     }
+
     @GetMapping(path = "confirm")
     public ResponseEntity<String> confirm(@RequestParam("token") String token){
 
@@ -30,6 +30,6 @@ public class RegistrationController {
     public ResponseEntity<AuthenticationResponseDTO> authenticate(
             @RequestBody AuthenticationRequestDTO request){
 
-        return ResponseEntity.ok(service.authenticate(request));
+        return ResponseEntity.status(202).body(service.authenticate(request));
     }
 }
