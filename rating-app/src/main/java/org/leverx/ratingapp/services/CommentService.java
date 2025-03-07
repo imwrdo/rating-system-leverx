@@ -11,7 +11,7 @@ import org.leverx.ratingapp.services.auth.AuthenticationAndRegistrationService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
+
 
 @Service
 @AllArgsConstructor
@@ -36,7 +36,7 @@ public class CommentService {
                 .message(comment.getMessage())
                 .author(comment.getAuthor().getEmail())
                 .seller(comment.getSeller().getEmail())
-                .Status("Comment is created, please wait for verification")
+                .status("Comment is created, please wait for verification")
                 .build();
     }
 
@@ -96,7 +96,7 @@ public class CommentService {
                 .message(comment.getMessage())
                 .author(comment.getAuthor().getEmail())
                 .seller(comment.getSeller().getEmail())
-                .Status("Comment is modified")
+                .status("Modified")
                 .build();
     }
 }

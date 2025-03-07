@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Builder
-public record CommentResponseDTO(Long id,String message,String author,String seller,String Status) {
+public record CommentResponseDTO(Long id,String message,String author,String seller,String status) {
 
     public static List<CommentResponseDTO> mapToCommentResponseDTO(List<Comment> comments){
         return comments.stream()
@@ -15,7 +15,7 @@ public record CommentResponseDTO(Long id,String message,String author,String sel
                         .message(comment.getMessage())
                         .author(comment.getAuthor().getEmail())
                         .seller(comment.getSeller().getEmail())
-                        .Status(comment.getIs_approved() ? "Approved" : "Pending")
+                        .status(comment.getIs_approved() ? "Approved" : "Pending")
                         .build())
                 .collect(Collectors.toList());
     }

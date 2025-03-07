@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 @Service
 @AllArgsConstructor
 public class UserService implements UserDetailsService {
-    private final static String USER_NOT_FOUND_MSG = "User with email %s not found";
     private UserRepository userRepository;
 
     @Override
@@ -22,7 +21,7 @@ public class UserService implements UserDetailsService {
                 .findByEmail(email)
                 .orElseThrow(()->
                         new UsernameNotFoundException(String
-                                .format(USER_NOT_FOUND_MSG,email)));
+                                .format("User with email %s not found",email)));
     }
 
 

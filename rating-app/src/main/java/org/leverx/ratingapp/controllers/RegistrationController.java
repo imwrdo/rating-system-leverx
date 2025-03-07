@@ -17,16 +17,19 @@ public class RegistrationController {
     @PostMapping(path="register")
     public ResponseEntity<AuthenticationResponseDTO> register(
             @RequestBody RegistrationRequestDTO request){
+
         return ResponseEntity.ok(service.register(request));
     }
     @GetMapping(path = "confirm")
-    public String confirm(@RequestParam("token") String token){
-        return service.confirmToken(token);
+    public ResponseEntity<String> confirm(@RequestParam("token") String token){
+
+        return ResponseEntity.ok(service.confirmToken(token));
     }
 
     @PostMapping("authenticate")
     public ResponseEntity<AuthenticationResponseDTO> authenticate(
             @RequestBody AuthenticationRequestDTO request){
+
         return ResponseEntity.ok(service.authenticate(request));
     }
 }
