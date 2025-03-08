@@ -12,7 +12,6 @@ public interface AuthenticationAndRegistrationService {
      AuthenticationResponseDTO register(RegistrationRequestDTO registrationRequestDTO);
      AuthenticationResponseDTO authenticate(AuthenticationRequestDTO request);
      String confirmToken(String token);
-     String buildEmail(String name, String link);
      AuthenticationResponseDTO initiatePasswordReset(String email);
      AuthenticationResponseDTO resetPassword(PasswordResetRequestDTO request);
      AuthenticationResponseDTO verifyResetCode(String email, String code);
