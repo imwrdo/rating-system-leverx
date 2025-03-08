@@ -4,15 +4,16 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.leverx.ratingapp.dtos.auth.AuthenticationRequestDTO;
 import org.leverx.ratingapp.dtos.auth.AuthenticationResponseDTO;
-import org.leverx.ratingapp.dtos.auth.RegistrationRequestDTO;
+import org.leverx.ratingapp.dtos.auth.PasswordResetRequestDTO;
+import org.leverx.ratingapp.dtos.auth.registration.RegistrationRequestDTO;
 import org.leverx.ratingapp.entities.Comment;
 import org.leverx.ratingapp.entities.GameObject;
 import org.leverx.ratingapp.entities.User;
 import org.leverx.ratingapp.exceptions.AccountNotActivatedException;
 import org.leverx.ratingapp.repositories.UserRepository;
-import org.leverx.ratingapp.services.auth.jwt.JwtServiceImplementation;
-import org.leverx.ratingapp.services.auth.token.ConfirmationTokenServiceImplementation;
-import org.leverx.ratingapp.services.user.UserServiceImplementation;
+import org.leverx.ratingapp.services.auth.jwt.JwtService;
+import org.leverx.ratingapp.services.auth.token.ConfirmationTokenService;
+import org.leverx.ratingapp.services.user.UserService;
 import org.leverx.ratingapp.services.email.interfaces.EmailSender;
 import org.leverx.ratingapp.services.email.EmailValidatorService;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -28,19 +29,21 @@ import org.leverx.ratingapp.exceptions.UnauthorizedException;
 import org.leverx.ratingapp.exceptions.InvalidOperationException;
 import org.leverx.ratingapp.exceptions.ForbiddenException;
 
+import java.security.SecureRandom;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
 public class AuthenticationAndRegistrationServiceImplementation implements AuthenticationAndRegistrationService {
     private final EmailValidatorService emailValidatorService;
-    private final ConfirmationTokenServiceImplementation confirmationTokenService;
+    private final ConfirmationTokenService confirmationTokenService;
     private final EmailSender emailSender;
     private final BCryptPasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
-    private final UserServiceImplementation userServiceImplementation;
-    private final JwtServiceImplementation jwtService;
+    private final UserService userService;
+    private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
 
     @Override
@@ -138,9 +141,62 @@ public class AuthenticationAndRegistrationServiceImplementation implements Authe
             throw new InvalidOperationException("Invalid token");
         }
 
-        userServiceImplementation.enableUser(userEmail);
+        userService.enableUser(userEmail);
         confirmationTokenService.removeConfirmationToken(userEmail);
         return "confirmed";
+    }
+
+    @Override
+    public AuthenticationResponseDTO initiatePasswordReset(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new InvalidOperationException("Email not found"));
+
+        String resetCode = generateResetCode();
+        confirmationTokenService.saveResetCode(email, resetCode);
+        emailSender.sendPasswordResetEmail(email, resetCode);
+
+        return AuthenticationResponseDTO.builder()
+                .user(email)
+                .Status("Password reset code sent")
+                .build();
+    }
+
+    @Override
+    public AuthenticationResponseDTO resetPassword(PasswordResetRequestDTO request) {
+        String storedCode = confirmationTokenService.getResetCode(request.email());
+        if (storedCode == null || !storedCode.equals(request.code())) {
+            throw new InvalidOperationException("Invalid or expired reset code");
+        }
+
+        User user = userRepository.findByEmail(request.email())
+                .orElseThrow(() -> new InvalidOperationException("User not found"));
+
+        user.setPassword(passwordEncoder.encode(request.newPassword()));
+        userRepository.save(user);
+        confirmationTokenService.removeResetCode(request.email());
+
+        return AuthenticationResponseDTO.builder()
+                .user(request.email())
+                .Status("Password successfully reset")
+                .build();
+    }
+
+    @Override
+    public AuthenticationResponseDTO verifyResetCode(String email, String code) {
+        String storedCode = confirmationTokenService.getResetCode(email);
+        boolean isValid = storedCode != null && storedCode.equals(code);
+
+        return AuthenticationResponseDTO.builder()
+                .user(email)
+                .Status(isValid ? "Valid reset code" : "Invalid reset code")
+                .build();
+    }
+
+    private String generateResetCode() {
+        SecureRandom random = new SecureRandom();
+        return random.ints(6, 0, 10)
+                .mapToObj(String::valueOf)
+                .collect(Collectors.joining());
     }
 
     @Override

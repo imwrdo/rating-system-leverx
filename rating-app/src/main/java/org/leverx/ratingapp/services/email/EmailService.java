@@ -40,4 +40,25 @@ public class EmailService implements EmailSender {
         }
     }
 
+    @Override
+    @Async
+    public void sendPasswordResetEmail(String to, String code) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, "utf-8");
+            String emailContent = String.format(
+                "Your password reset code is: %s\nThis code will expire in 15 minutes.",
+                code
+            );
+            helper.setText(emailContent, true);
+            helper.setTo(to);
+            helper.setSubject("Password Reset Request");
+            helper.setFrom("nasznetflixgdansk@gmail.com");
+            mailSender.send(message);
+        } catch(MessagingException e) {
+            LOGGER.error("Failed to send password reset email ", e);
+            throw new InvalidOperationException("Failed to send password reset email");
+        }
+    }
+
 }

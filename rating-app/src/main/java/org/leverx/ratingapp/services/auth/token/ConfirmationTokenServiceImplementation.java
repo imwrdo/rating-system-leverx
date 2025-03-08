@@ -27,4 +27,21 @@ public class ConfirmationTokenServiceImplementation implements ConfirmationToken
     public void removeConfirmationToken(String email) {
         confirmationTokenRepository.removeToken(email);
     }
+
+    @Override
+    public void saveResetCode(String email, String resetCode) {
+        confirmationTokenRepository.saveResetCode(email, resetCode);
+    }
+
+    @Override
+    public String getResetCode(String email) {
+        return confirmationTokenRepository.getResetCode(email);
+    }
+
+    @Override
+    public void removeResetCode(String email) {
+        confirmationTokenRepository.removeResetCode(email);
+    }
+
+
 }
