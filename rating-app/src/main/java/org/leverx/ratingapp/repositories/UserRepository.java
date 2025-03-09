@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -20,4 +21,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("UPDATE User a " +
             "SET a.is_activated = TRUE WHERE a.email = ?1")
     void enableUser(String email);
+
+    @Query("SELECT u FROM User u WHERE u.is_activated = true")
+    List<User> findAllIsActivated();
 }

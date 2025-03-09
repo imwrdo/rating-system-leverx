@@ -1,9 +1,11 @@
 package org.leverx.ratingapp.controllers;
 
 import lombok.AllArgsConstructor;
+import org.leverx.ratingapp.dtos.UserDTO;
 import org.leverx.ratingapp.dtos.comments.CommentRequestDTO;
 import org.leverx.ratingapp.dtos.comments.CommentResponseDTO;
 import org.leverx.ratingapp.services.comment.CommentService;
+import org.leverx.ratingapp.services.user.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,6 +18,14 @@ import java.util.List;
 public class CommentController {
 
     private final CommentService service;
+    private final UserService userService;
+
+    @GetMapping
+    public ResponseEntity<List<UserDTO>> getAllActivatedUsers() {
+        List<UserDTO> users = userService.getAllActivatedUsers();
+        return ResponseEntity.ok(users);
+    }
+
 
     @PostMapping(path ="{seller_id}/comments")
     public ResponseEntity<CommentResponseDTO> create(

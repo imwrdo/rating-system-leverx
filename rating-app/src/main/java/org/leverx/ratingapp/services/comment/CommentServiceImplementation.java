@@ -100,7 +100,6 @@ public class CommentServiceImplementation implements CommentService {
     public CommentResponseDTO update(Long sellerId, Long commentId, CommentRequestDTO commentObject) {
 
         User currentUser = authAndRegService.getCurrentUser();
-
         userRepository.findById(sellerId)
                 .orElseThrow(() ->
                         new RuntimeException(String.format("Seller with id %d not found", sellerId)));
