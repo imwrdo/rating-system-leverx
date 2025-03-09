@@ -86,10 +86,13 @@ public class UserServiceImplementation implements UserDetailsService, UserServic
                     .toList();
         }
 
+        comments = comments.stream()
+                .filter(Comment::getIs_approved)
+                .toList();
 
         Map<Long, Long> userCommentCount = comments.stream()
                 .collect(Collectors.groupingBy(comment ->
-                                comment.getAuthor().getId(),
+                                comment.getSeller().getId(),
                         Collectors.counting()));
 
 

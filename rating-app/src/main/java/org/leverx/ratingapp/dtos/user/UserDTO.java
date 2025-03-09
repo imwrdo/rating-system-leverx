@@ -25,7 +25,7 @@ public record UserDTO(
 
     public static UserDTO mapToUserDTO(User user, List<Comment> comments, List<GameObject> gameObjects) {
         List<Comment> userComments = comments.stream()
-                .filter(comment -> comment.getAuthor().getId().equals(user.getId()))
+                .filter(comment -> comment.getSeller().getId().equals(user.getId()))
                 .toList();
         List<GameObject> userGameObjects =  gameObjects.stream()
                 .filter(gameObject -> gameObject.getUser().getId().equals(user.getId()))

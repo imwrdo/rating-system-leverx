@@ -3,6 +3,7 @@ package org.leverx.ratingapp.controllers;
 import lombok.AllArgsConstructor;
 import org.leverx.ratingapp.dtos.comments.CommentResponseDTO;
 import org.leverx.ratingapp.dtos.user.UserDTO;
+import org.leverx.ratingapp.services.auth.AuthenticationAndRegistrationService;
 import org.leverx.ratingapp.services.comment.CommentService;
 import org.leverx.ratingapp.services.user.UserService;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +17,13 @@ import java.util.List;
 public class AdminController {
     private final UserService userService;
     private final CommentService commentService;
+    private final AuthenticationAndRegistrationService authAndRegService;
+
+    @GetMapping(path = "confirm")
+    public ResponseEntity<String> confirm(@RequestParam("token") String token){
+
+        return ResponseEntity.ok(authAndRegService.confirmToken(token));
+    }
 
     @GetMapping(path= "users")
     public ResponseEntity<List<UserDTO>> getAllUsers(){
