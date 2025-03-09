@@ -9,5 +9,5 @@ public interface UserService {
      void enableUser(String email);
      List<UserDTO> getAllActivatedUsers();
      UserDTO getActiveUser(Long sellerId);
-     List<UserRankingDTO> getUserRanking();
+     List<UserRankingDTO> getUserRating(String gameName,Long ratingLimit);
 }

@@ -9,4 +9,6 @@ import java.util.List;
 @Repository
 public interface GameObjectRepository extends JpaRepository<GameObject, Long> {
     List<GameObject> findAllByUserId(Long userId);
+
+    List<GameObject> findAllByTitleContainingIgnoreCase(String title);
 }

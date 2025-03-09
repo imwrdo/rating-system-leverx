@@ -5,10 +5,7 @@ import org.leverx.ratingapp.dtos.user.UserRankingDTO;
 import org.leverx.ratingapp.dtos.user.UserDTO;
 import org.leverx.ratingapp.services.user.UserService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -29,8 +26,11 @@ public class UserController {
         return ResponseEntity.ok(userService.getActiveUser(seller_id));
     }
 
-    @GetMapping(path = "ranking")
-    public ResponseEntity<List<UserRankingDTO>> getRankingUsers() {
-        return ResponseEntity.ok(userService.getUserRanking());
+    @GetMapping(path = "rating")
+    public ResponseEntity<List<UserRankingDTO>> getUsersRating(
+            @RequestParam(required = false) String gameName,
+            @RequestParam(required = false) Long ratingLimit
+    ) {
+        return ResponseEntity.ok(userService.getUserRating(gameName,ratingLimit));
     }
 }

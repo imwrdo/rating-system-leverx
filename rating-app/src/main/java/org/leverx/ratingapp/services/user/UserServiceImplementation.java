@@ -63,25 +63,35 @@ public class UserServiceImplementation implements UserDetailsService, UserServic
     }
 
     @Override
-    public List<UserRankingDTO> getUserRanking() {
+    public List<UserRankingDTO> getUserRating(String gameName,Long ratingLimit) {
         List<User> users = userRepository.findAllIsActivated();
         List<Comment> comments = commentRepository.findAll();
+
+        if(gameName!=null && !gameName.isEmpty()) {
+            List<Long> relatedGameIds = gameObjectRepository.findAllByTitleContainingIgnoreCase(gameName)
+                    .stream()
+                    .map(GameObject::getId)
+                    .toList();
+            comments = comments.stream()
+                    .filter(comment -> relatedGameIds.contains(comment.getSeller().getId()))
+                    .toList();
+        }
+
 
         Map<Long, Long> userCommentCount = comments.stream()
                 .collect(Collectors.groupingBy(comment ->
                         comment.getAuthor().getId(),
                         Collectors.counting()));
 
-        List<User> sortedUsers = users.stream()
+
+        return users.stream()
                 .sorted((u1, u2) -> Long.compare(
                         userCommentCount.getOrDefault(u2.getId(), 0L),
                         userCommentCount.getOrDefault(u1.getId(), 0L))
                 )
-                .toList();
-
-        return sortedUsers.stream()
+                .limit(ratingLimit != null && ratingLimit > 0 ? ratingLimit : Long.MAX_VALUE)
                 .map(user -> UserRankingDTO.builder()
-                        .place(sortedUsers.indexOf(user) + 1)
+                        .place(users.indexOf(user) + 1)
                         .id(user.getId())
                         .first_name(user.getFirst_name())
                         .last_name(user.getLast_name())
@@ -90,7 +100,6 @@ public class UserServiceImplementation implements UserDetailsService, UserServic
                         .commentCount(userCommentCount.getOrDefault(user.getId(), 0L).intValue())
                         .build()
                 )
-                .limit(10)
                 .collect(Collectors.toList());
     }
 
