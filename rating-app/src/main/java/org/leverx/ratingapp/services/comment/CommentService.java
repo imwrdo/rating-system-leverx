@@ -11,4 +11,5 @@ public interface CommentService {
      CommentResponseDTO getComment(Long sellerId, Long commentId);
      String delete(Long sellerId, Long commentId);
      CommentResponseDTO update(Long sellerId, Long commentId, CommentRequestDTO commentObject);
+
 }

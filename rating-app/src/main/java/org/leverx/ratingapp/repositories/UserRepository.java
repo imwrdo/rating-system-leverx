@@ -24,4 +24,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Query("SELECT u FROM User u WHERE u.is_activated = true")
     List<User> findAllIsActivated();
+
+    @Query("SELECT u FROM User u WHERE u.is_activated = true AND u.id = ?1")
+    Optional<User> findIsActivatedById(Long id);
 }

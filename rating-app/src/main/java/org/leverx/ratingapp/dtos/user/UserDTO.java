@@ -1,4 +1,4 @@
-package org.leverx.ratingapp.dtos;
+package org.leverx.ratingapp.dtos.user;
 
 import lombok.Builder;
 import org.leverx.ratingapp.dtos.comments.CommentResponseDTO;
@@ -22,16 +22,14 @@ public record UserDTO(
         List<CommentResponseDTO> comments,
         List<GameObjectResponseDTO> gameObjects) {
 
-    private double calculateAverageRating() {
-        if (!comments.isEmpty()) {
-            return comments.size();
-        }
-        else {
-            throw new IllegalArgumentException("No comments found");
-        }
-    }
 
-    public static UserDTO mapToUserDTO(User user,List<Comment> comments, List<GameObject> gameObjects) {
+    public static UserDTO mapToUserDTO(User user, List<Comment> comments, List<GameObject> gameObjects) {
+        List<Comment> userComments = comments.stream()
+                .filter(comment -> comment.getAuthor().getId().equals(user.getId()))
+                .toList();
+        List<GameObject> userGameObjects =  gameObjects.stream()
+                .filter(gameObject -> gameObject.getUser().getId().equals(user.getId()))
+                .toList();
         return UserDTO.builder()
                 .id(user.getId())
                 .first_name(user.getFirst_name())
@@ -39,18 +37,17 @@ public record UserDTO(
                 .email(user.getEmail())
                 .created_at(user.getCreated_at())
                 .role(user.getRole())
-                .comments(CommentResponseDTO.mapToCommentResponseDTO(comments))
-                .gameObjects(GameObjectResponseDTO.mapToGameObjectResponseDTO(gameObjects))
+                .comments(CommentResponseDTO.mapToCommentResponseDTO(userComments))
+                .gameObjects(GameObjectResponseDTO.mapToGameObjectResponseDTO(userGameObjects))
                 .build();
     }
 
-    public static List<UserDTO> mapToUserDTO(List<User> users, List<Comment> comments, List<GameObject> gameObjects) {
+    public static List<UserDTO> mapToUsersDTO(List<User> users, List<Comment> comments, List<GameObject> gameObjects) {
         return users.stream()
                 .map(user -> mapToUserDTO(
                         user,
-                        comments.stream().filter(comment -> comment.getAuthor().getId().equals(user.getId())).collect(Collectors.toList()),
-                        gameObjects.stream().filter(gameObject -> gameObject.getUser().getId().equals(user.getId())).collect(Collectors.toList())
-                ))
+                        comments,
+                        gameObjects))
                 .collect(Collectors.toList());
     }
 
