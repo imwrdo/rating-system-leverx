@@ -1,13 +1,12 @@
 package org.leverx.ratingapp.controllers;
 
 import lombok.AllArgsConstructor;
+import org.leverx.ratingapp.dtos.comments.CommentResponseDTO;
 import org.leverx.ratingapp.dtos.user.UserDTO;
+import org.leverx.ratingapp.services.comment.CommentService;
 import org.leverx.ratingapp.services.user.UserService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -16,6 +15,7 @@ import java.util.List;
 @RequestMapping(path ="admin")
 public class AdminController {
     private final UserService userService;
+    private final CommentService commentService;
 
     @GetMapping(path= "users")
     public ResponseEntity<List<UserDTO>> getAllUsers(){
@@ -29,4 +29,23 @@ public class AdminController {
         return ResponseEntity.ok(userService.getUserById(user_id, false));
     }
 
+    @GetMapping(path ="{seller_id}/comments")
+    public ResponseEntity<List<CommentResponseDTO>> getAllAcceptedComments(
+            @PathVariable Long seller_id){
+        return ResponseEntity.ok(commentService.getAll(seller_id,true));
+    }
+
+    @GetMapping(path ="{seller_id}/comments/{comment_id}")
+    public ResponseEntity<CommentResponseDTO> getComment(
+            @PathVariable Long seller_id,
+            @PathVariable Long comment_id){
+        return ResponseEntity.ok(commentService.getComment(seller_id,comment_id,true));
+    }
+
+    @PostMapping(path ="{seller_id}/comments/{comment_id}")
+    public ResponseEntity<CommentResponseDTO> approveComment(
+            @PathVariable Long seller_id,
+            @PathVariable Long comment_id){
+        return ResponseEntity.ok(commentService.approveComment(seller_id,comment_id));
+    }
 }

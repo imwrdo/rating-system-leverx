@@ -29,17 +29,17 @@ public class CommentController {
     }
 
     @GetMapping(path ="{seller_id}/comments")
-    public ResponseEntity<List<CommentResponseDTO>> getAll(
+    public ResponseEntity<List<CommentResponseDTO>> getAllAcceptedComments(
             @PathVariable Long seller_id){
 
-        return ResponseEntity.ok(commentService.getAll(seller_id));
+        return ResponseEntity.ok(commentService.getAll(seller_id,false));
     }
 
     @GetMapping(path ="{seller_id}/comments/{comment_id}")
     public ResponseEntity<CommentResponseDTO> getComment(
             @PathVariable Long seller_id,
             @PathVariable Long comment_id){
-        return ResponseEntity.ok(commentService.getComment(seller_id,comment_id));
+        return ResponseEntity.ok(commentService.getComment(seller_id,comment_id,false));
     }
 
     @DeleteMapping(path = "{seller_id}/comments/{comment_id}")

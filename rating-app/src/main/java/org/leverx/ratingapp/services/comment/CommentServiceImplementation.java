@@ -12,6 +12,7 @@ import org.leverx.ratingapp.services.auth.AuthenticationAndRegistrationServiceIm
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 
 @Service
@@ -48,23 +49,37 @@ public class CommentServiceImplementation implements CommentService {
     }
 
     @Override
-    public List<CommentResponseDTO> getAll(Long sellerId) {
+    public List<CommentResponseDTO> getAll(Long sellerId,Boolean isAdmin) {
+
+        User currentUser = authAndRegService.getCurrentUser();
 
         userRepository.findById(sellerId)
                 .orElseThrow(() ->
                         new RuntimeException(String.format("Seller with id %d not found",sellerId)));
 
-        List<Comment> comments = commentRepository.findAllBySellerId(sellerId);
+        List<Comment> comments = isAdmin
+                ? commentRepository.findAllBySellerId(sellerId)
+                : Stream.concat(
+                        commentRepository.findAllAcceptedBySellerId(sellerId).stream(),
+                        commentRepository.findAllBySellerId(sellerId).stream()
+                                .filter(comment -> comment.getAuthor().getEmail().equals(currentUser.getEmail()))
+                )
+                .distinct()
+                .toList();
 
         return CommentResponseDTO.mapToCommentResponseDTO(comments);
     }
 
     @Override
-    public CommentResponseDTO getComment(Long sellerId, Long commentId) {
+    public CommentResponseDTO getComment(Long sellerId, Long commentId, Boolean isAdmin) {
+        User currentUser = authAndRegService.getCurrentUser();
 
-        var comment =  commentRepository.findByIdAndSellerId(commentId,sellerId)
-                .orElseThrow(() -> new RuntimeException(String.format("Comment for seller %d and id %d not found",sellerId,commentId)));
-
+        Comment comment = commentRepository.findByIdAndSellerId(commentId, sellerId)
+                .filter(c -> isAdmin
+                        || c.getIs_approved()
+                        || c.getAuthor().getEmail().equals(currentUser.getEmail()))
+                .orElseThrow(() ->
+                        new RuntimeException(String.format("Comment for seller %d and id %d not found", sellerId, commentId)));
         return CommentResponseDTO.builder()
                 .id(comment.getId())
                 .message(comment.getMessage())
@@ -122,6 +137,33 @@ public class CommentServiceImplementation implements CommentService {
                 .author(comment.getAuthor().getEmail())
                 .seller(comment.getSeller().getEmail())
                 .status("Modified")
+                .build();
+    }
+
+    @Override
+    public CommentResponseDTO approveComment(Long sellerId, Long commentId) {
+        userRepository.findById(sellerId)
+                .orElseThrow(() ->
+                        new RuntimeException(String.format("Seller with id %d not found", sellerId)));
+
+        commentRepository.findById(commentId)
+                .orElseThrow(()->
+                        new RuntimeException(String.format("Comment with id %d not found", commentId)));
+
+        var comment =  commentRepository.findByIdAndSellerId(commentId,sellerId)
+                .map(existingComment -> {
+                    existingComment.setIs_approved(true);
+                    commentRepository.save(existingComment);
+                    return existingComment;
+                })
+                .orElseThrow(() -> new RuntimeException(String.format("Comment for seller %d and id %d not found",sellerId,commentId)));
+
+        return CommentResponseDTO.builder()
+                .id(comment.getId())
+                .message(comment.getMessage())
+                .author(comment.getAuthor().getEmail())
+                .seller(comment.getSeller().getEmail())
+                .status("Approved")
                 .build();
     }
 

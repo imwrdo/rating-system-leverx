@@ -7,9 +7,9 @@ import java.util.List;
 
 public interface CommentService {
      CommentResponseDTO create(Long sellerId, CommentRequestDTO commentObject);
-     List<CommentResponseDTO> getAll(Long sellerId);
-     CommentResponseDTO getComment(Long sellerId, Long commentId);
+     List<CommentResponseDTO> getAll(Long sellerId,Boolean isAdmin);
+     CommentResponseDTO getComment(Long sellerId, Long commentId, Boolean isAdmin);
      String delete(Long sellerId, Long commentId);
      CommentResponseDTO update(Long sellerId, Long commentId, CommentRequestDTO commentObject);
-
+     CommentResponseDTO approveComment(Long sellerId, Long commentId);
 }
