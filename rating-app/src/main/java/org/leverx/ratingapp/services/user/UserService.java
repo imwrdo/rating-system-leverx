@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface UserService {
      void enableUser(String email);
-     List<UserDTO> getAllActivatedUsers();
-     UserDTO getActiveUser(Long sellerId);
      List<UserRankingDTO> getUserRating(String gameName,Long ratingLimit);
+     List<UserDTO> getAllUsers(boolean onlyActive);
+     UserDTO getUserById(Long user_id, boolean onlyActive);
 }

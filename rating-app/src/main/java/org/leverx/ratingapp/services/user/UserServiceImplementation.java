@@ -2,8 +2,8 @@ package org.leverx.ratingapp.services.user;
 
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
-import org.leverx.ratingapp.dtos.user.UserRankingDTO;
 import org.leverx.ratingapp.dtos.user.UserDTO;
+import org.leverx.ratingapp.dtos.user.UserRankingDTO;
 import org.leverx.ratingapp.entities.Comment;
 import org.leverx.ratingapp.entities.GameObject;
 import org.leverx.ratingapp.entities.User;
@@ -11,7 +11,6 @@ import org.leverx.ratingapp.exceptions.ResourceNotFoundException;
 import org.leverx.ratingapp.repositories.CommentRepository;
 import org.leverx.ratingapp.repositories.GameObjectRepository;
 import org.leverx.ratingapp.repositories.UserRepository;
-
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -29,14 +28,13 @@ public class UserServiceImplementation implements UserDetailsService, UserServic
     private UserRepository userRepository;
     private CommentRepository commentRepository;
     private GameObjectRepository gameObjectRepository;
+
     @Override
-    public UserDetails loadUserByUsername(String email)
-            throws UsernameNotFoundException {
-        return userRepository
-                .findByEmail(email)
-                .orElseThrow(()->
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() ->
                         new UsernameNotFoundException(String
-                                .format("User with email %s not found",email)));
+                                .format("User with email %s not found", email)));
     }
 
 
@@ -46,41 +44,52 @@ public class UserServiceImplementation implements UserDetailsService, UserServic
     }
 
     @Override
-    public List<UserDTO> getAllActivatedUsers() {
-        List<User> users = userRepository.findAllIsActivated();
-        List<Comment> comments = commentRepository.findAll();
-        List<GameObject> games = gameObjectRepository.findAll();
-        return UserDTO.mapToUsersDTO(users,comments,games);
+    public List<UserDTO> getAllUsers(boolean onlyActive) {
+        List<User> users = onlyActive
+                ? userRepository.findAllActiveUsers()
+                : userRepository.findAll();
+        return mapToUsersDTO(users);
     }
 
     @Override
-    public UserDTO getActiveUser(Long sellerId) {
-        User user = userRepository.findIsActivatedById(sellerId)
-                .orElseThrow(()->
-                        new ResourceNotFoundException(String
-                                .format("User with id %s not found",sellerId)));
-        return UserDTO.mapToUserDTO(user,commentRepository.findAll(),gameObjectRepository.findAll());
+    public UserDTO getUserById(Long user_id, boolean onlyActive) {
+        User user = onlyActive
+                ? userRepository.findActiveUserById(user_id)
+                    .orElseThrow(() ->
+                            new ResourceNotFoundException("Active user with id %s not found"
+                                    .formatted(user_id)))
+                : userRepository.findById(user_id)
+                    .orElseThrow(() ->
+                            new ResourceNotFoundException("Active user with id %s not found"
+                                    .formatted(user_id)));
+        return UserDTO.mapToUserDTO(
+                user,
+                commentRepository.findAll(),
+                gameObjectRepository.findAll()
+        );
     }
 
     @Override
-    public List<UserRankingDTO> getUserRating(String gameName,Long ratingLimit) {
-        List<User> users = userRepository.findAllIsActivated();
+    public List<UserRankingDTO> getUserRating(String gameName, Long ratingLimit) {
+        List<User> users = userRepository.findAllActiveUsers();
         List<Comment> comments = commentRepository.findAll();
 
-        if(gameName!=null && !gameName.isEmpty()) {
-            List<Long> relatedGameIds = gameObjectRepository.findAllByTitleContainingIgnoreCase(gameName)
+        if (gameName != null && !gameName.isEmpty()) {
+            List<Long> relatedGameIds = gameObjectRepository
+                    .findAllByTitleContainingIgnoreCase(gameName)
                     .stream()
                     .map(GameObject::getId)
                     .toList();
             comments = comments.stream()
-                    .filter(comment -> relatedGameIds.contains(comment.getSeller().getId()))
+                    .filter(comment -> relatedGameIds
+                            .contains(comment.getSeller().getId()))
                     .toList();
         }
 
 
         Map<Long, Long> userCommentCount = comments.stream()
                 .collect(Collectors.groupingBy(comment ->
-                        comment.getAuthor().getId(),
+                                comment.getAuthor().getId(),
                         Collectors.counting()));
 
 
@@ -101,6 +110,12 @@ public class UserServiceImplementation implements UserDetailsService, UserServic
                         .build()
                 )
                 .collect(Collectors.toList());
+    }
+
+    private List<UserDTO> mapToUsersDTO(List<User> users) {
+        List<Comment> comments = commentRepository.findAll();
+        List<GameObject> games = gameObjectRepository.findAll();
+        return UserDTO.mapToUsersDTO(users, comments, games);
     }
 
 }

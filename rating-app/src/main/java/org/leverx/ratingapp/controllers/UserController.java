@@ -17,13 +17,12 @@ public class UserController {
 
     @GetMapping
     public ResponseEntity<List<UserDTO>> getAllActivatedUsers() {
-        List<UserDTO> users = userService.getAllActivatedUsers();
-        return ResponseEntity.ok(users);
+        return ResponseEntity.ok(userService.getAllUsers(true));
     }
 
     @GetMapping(path ="{seller_id}")
     public ResponseEntity<UserDTO> getActiveUser(@PathVariable Long seller_id) {
-        return ResponseEntity.ok(userService.getActiveUser(seller_id));
+        return ResponseEntity.ok(userService.getUserById(seller_id,true));
     }
 
     @GetMapping(path = "rating")
