@@ -30,4 +30,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Query("SELECT u FROM User u WHERE u.is_activated = false")
     List<User> findAllInactiveUsers();
+
+    @Query("SELECT COUNT(u) > 0 FROM User u WHERE u.is_activated = true AND u.id = ?1")
+    boolean existsActiveUserById(Long user_id);
+
+    void deleteUserByEmail(String email);
 }

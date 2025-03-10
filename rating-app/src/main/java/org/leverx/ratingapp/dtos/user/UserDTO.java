@@ -23,9 +23,14 @@ public record UserDTO(
         List<GameObjectResponseDTO> gameObjects) {
 
 
-    public static UserDTO mapToUserDTO(User user, List<Comment> comments, List<GameObject> gameObjects) {
+    public static UserDTO mapToUserDTO(User user, List<Comment> comments, List<GameObject> gameObjects,Boolean isAdmin) {
         List<Comment> userComments = comments.stream()
-                .filter(comment -> comment.getSeller().getId().equals(user.getId()))
+                .filter(comment ->isAdmin
+                        ? comment.getSeller().getId()
+                                .equals(user.getId())
+                        : comment.getSeller().getId()
+                                .equals(user.getId())
+                            && comment.getIs_approved())
                 .toList();
         List<GameObject> userGameObjects =  gameObjects.stream()
                 .filter(gameObject -> gameObject.getUser().getId().equals(user.getId()))
@@ -42,12 +47,13 @@ public record UserDTO(
                 .build();
     }
 
-    public static List<UserDTO> mapToUsersDTO(List<User> users, List<Comment> comments, List<GameObject> gameObjects) {
+    public static List<UserDTO> mapToUsersDTO(List<User> users, List<Comment> comments, List<GameObject> gameObjects,Boolean isAdmin) {
         return users.stream()
                 .map(user -> mapToUserDTO(
                         user,
                         comments,
-                        gameObjects))
+                        gameObjects,
+                        isAdmin))
                 .collect(Collectors.toList());
     }
 

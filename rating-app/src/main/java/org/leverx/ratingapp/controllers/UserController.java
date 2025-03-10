@@ -17,7 +17,7 @@ public class UserController {
 
     @GetMapping
     public ResponseEntity<List<UserDTO>> getAllActivatedUsers() {
-        return ResponseEntity.ok(userService.getAllUsers(true));
+        return ResponseEntity.ok(userService.getAllUsers(true,false));
     }
 
     @GetMapping(path ="{seller_id}")

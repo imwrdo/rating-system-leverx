@@ -32,7 +32,7 @@ public class CommentController {
     public ResponseEntity<List<CommentResponseDTO>> getAllAcceptedComments(
             @PathVariable Long seller_id){
 
-        return ResponseEntity.ok(commentService.getAll(seller_id,false));
+        return ResponseEntity.ok(commentService.getAllBySellerId(seller_id,false));
     }
 
     @GetMapping(path ="{seller_id}/comments/{comment_id}")

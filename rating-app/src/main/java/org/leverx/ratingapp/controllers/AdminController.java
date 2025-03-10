@@ -20,14 +20,16 @@ public class AdminController {
     private final AuthenticationAndRegistrationService authAndRegService;
 
     @GetMapping(path = "confirm")
-    public ResponseEntity<String> confirm(@RequestParam("token") String token){
+    public ResponseEntity<String> confirm(
+            @RequestParam("email") String email,
+            @RequestParam("confirm") Boolean confirm){
 
-        return ResponseEntity.ok(authAndRegService.confirmToken(token));
+        return ResponseEntity.status(202).body(authAndRegService.confirmUser(email,confirm));
     }
 
     @GetMapping(path= "users")
     public ResponseEntity<List<UserDTO>> getAllUsers(){
-        return ResponseEntity.ok(userService.getAllUsers(false));
+        return ResponseEntity.ok(userService.getAllUsers(false,true));
     }
 
     @GetMapping(path= "users/{user_id}")
@@ -37,23 +39,34 @@ public class AdminController {
         return ResponseEntity.ok(userService.getUserById(user_id, false));
     }
 
-    @GetMapping(path ="{seller_id}/comments")
-    public ResponseEntity<List<CommentResponseDTO>> getAllAcceptedComments(
+    @GetMapping(path ="users/{seller_id}/comments")
+    public ResponseEntity<List<CommentResponseDTO>> getAllCommentsBySellerId(
             @PathVariable Long seller_id){
-        return ResponseEntity.ok(commentService.getAll(seller_id,true));
+        return ResponseEntity.ok(commentService.getAllBySellerId(seller_id,true));
     }
 
-    @GetMapping(path ="{seller_id}/comments/{comment_id}")
+    @GetMapping(path = "users/comments")
+    public ResponseEntity<List<CommentResponseDTO>> getAllComments(){
+        return ResponseEntity.ok(commentService.getAll());
+    }
+
+    @GetMapping(path ="users/{seller_id}/comments/{comment_id}")
     public ResponseEntity<CommentResponseDTO> getComment(
             @PathVariable Long seller_id,
             @PathVariable Long comment_id){
         return ResponseEntity.ok(commentService.getComment(seller_id,comment_id,true));
     }
 
-    @PostMapping(path ="{seller_id}/comments/{comment_id}")
+    @PostMapping(path ="users/{seller_id}/comments/{comment_id}")
     public ResponseEntity<CommentResponseDTO> approveComment(
             @PathVariable Long seller_id,
-            @PathVariable Long comment_id){
-        return ResponseEntity.ok(commentService.approveComment(seller_id,comment_id));
+            @PathVariable Long comment_id,
+            @RequestParam("confirm") Boolean confirm){
+        return ResponseEntity.status(202).body(commentService.approveComment(seller_id,comment_id,confirm));
+    }
+
+    @GetMapping(path = "users/inactive")
+    public ResponseEntity<List<UserDTO>> getInactiveUsers(){
+        return ResponseEntity.ok(userService.getInactiveUsers());
     }
 }

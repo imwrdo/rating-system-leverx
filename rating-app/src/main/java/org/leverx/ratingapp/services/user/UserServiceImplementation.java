@@ -29,6 +29,7 @@ public class UserServiceImplementation implements UserDetailsService, UserServic
     private CommentRepository commentRepository;
     private GameObjectRepository gameObjectRepository;
 
+
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         return userRepository.findByEmail(email)
@@ -44,11 +45,11 @@ public class UserServiceImplementation implements UserDetailsService, UserServic
     }
 
     @Override
-    public List<UserDTO> getAllUsers(boolean onlyActive) {
+    public List<UserDTO> getAllUsers(boolean onlyActive, boolean isAdmin) {
         List<User> users = onlyActive
                 ? userRepository.findAllActiveUsers()
                 : userRepository.findAll();
-        return mapToUsersDTO(users);
+        return mapToUsersDTO(users, isAdmin);
     }
 
     @Override
@@ -65,8 +66,17 @@ public class UserServiceImplementation implements UserDetailsService, UserServic
         return UserDTO.mapToUserDTO(
                 user,
                 commentRepository.findAll(),
-                gameObjectRepository.findAll()
+                gameObjectRepository.findAll(),
+                !onlyActive
         );
+    }
+
+
+
+    @Override
+    public List<UserDTO> getInactiveUsers() {
+        List<User> users = userRepository.findAllInactiveUsers();
+        return mapToUsersDTO(users,true);
     }
 
     @Override
@@ -115,10 +125,10 @@ public class UserServiceImplementation implements UserDetailsService, UserServic
                 .collect(Collectors.toList());
     }
 
-    private List<UserDTO> mapToUsersDTO(List<User> users) {
+    private List<UserDTO> mapToUsersDTO(List<User> users, Boolean isAdmin) {
         List<Comment> comments = commentRepository.findAll();
         List<GameObject> games = gameObjectRepository.findAll();
-        return UserDTO.mapToUsersDTO(users, comments, games);
+        return UserDTO.mapToUsersDTO(users, comments, games,isAdmin);
     }
 
 }

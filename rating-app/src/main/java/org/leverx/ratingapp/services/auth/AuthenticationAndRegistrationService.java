@@ -15,4 +15,5 @@ public interface AuthenticationAndRegistrationService {
      AuthenticationResponseDTO initiatePasswordReset(String email);
      AuthenticationResponseDTO resetPassword(PasswordResetRequestDTO request);
      AuthenticationResponseDTO verifyResetCode(String email, String code);
+     String confirmUser(String email, Boolean confirm);
 }

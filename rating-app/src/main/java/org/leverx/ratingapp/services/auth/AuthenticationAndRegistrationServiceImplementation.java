@@ -148,6 +148,27 @@ public class AuthenticationAndRegistrationServiceImplementation implements Authe
     }
 
     @Override
+    public String confirmUser(String email, Boolean confirm) {
+
+        if (email == null) {
+            throw new InvalidOperationException("Invalid email");
+        }
+
+        confirmationTokenService.getConfirmationToken(email)
+                .orElseThrow(() -> new InvalidOperationException("Token not found or expired"));
+
+        if(!confirm) {
+            userRepository.deleteUserByEmail(email);
+            confirmationTokenService.removeConfirmationToken(email);
+            return "Declined";
+        }
+
+        userService.enableUser(email);
+        confirmationTokenService.removeConfirmationToken(email);
+        return "confirmed";
+    }
+
+    @Override
     public AuthenticationResponseDTO initiatePasswordReset(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new InvalidOperationException("Email not found"));
