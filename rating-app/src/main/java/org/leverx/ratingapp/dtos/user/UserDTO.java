@@ -14,10 +14,10 @@ import java.util.stream.Collectors;
 @Builder
 public record UserDTO(
         Long id,
-        String first_name,
-        String last_name,
+        String firstName,
+        String lastName,
         String email,
-        LocalDateTime created_at,
+        LocalDateTime createdAt,
         Role role,
         List<CommentResponseDTO> comments,
         List<GameObjectResponseDTO> gameObjects) {
@@ -30,17 +30,17 @@ public record UserDTO(
                                 .equals(user.getId())
                         : comment.getSeller().getId()
                                 .equals(user.getId())
-                            && comment.getIs_approved())
+                            && comment.getIsApproved())
                 .toList();
         List<GameObject> userGameObjects =  gameObjects.stream()
                 .filter(gameObject -> gameObject.getUser().getId().equals(user.getId()))
                 .toList();
         return UserDTO.builder()
                 .id(user.getId())
-                .first_name(user.getFirst_name())
-                .last_name(user.getLast_name())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
                 .email(user.getEmail())
-                .created_at(user.getCreated_at())
+                .createdAt(user.getCreatedAt())
                 .role(user.getRole())
                 .comments(CommentResponseDTO.mapToCommentResponseDTO(userComments))
                 .gameObjects(GameObjectResponseDTO.mapToGameObjectResponseDTO(userGameObjects))

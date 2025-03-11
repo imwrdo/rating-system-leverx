@@ -27,13 +27,13 @@ public class User implements UserDetails {
     private Long id;
 
     @Column(name="first_name", nullable = false)
-    private String first_name;
+    private String firstName;
 
     @Column(name="last_name", nullable = false)
-    private String last_name;
+    private String lastName;
 
     @Column(name= "is_activated", nullable = false)
-    private Boolean is_activated;
+    private Boolean isActivated;
 
     @Column(name="password", nullable = false)
     private String password;
@@ -43,7 +43,7 @@ public class User implements UserDetails {
     private String email;
 
     @Column(name="created_at", nullable = false, updatable = false)
-    private LocalDateTime created_at;
+    private LocalDateTime createdAt;
 
     @Enumerated(EnumType.STRING)
     @Column(name="role", nullable = false,updatable = false)
@@ -52,10 +52,10 @@ public class User implements UserDetails {
 
     @PrePersist
     protected void onCreate() {
-        is_activated = (role == Role.ADMIN)
+        isActivated = (role == Role.ADMIN)
                 ?true
                 :false;
-        created_at = LocalDateTime.now();
+        createdAt = LocalDateTime.now();
     }
 
     @Override
@@ -69,11 +69,7 @@ public class User implements UserDetails {
     public String getPassword() {
         return password;
     }
-    
 
-    public void activateUser() {
-        is_activated = true;
-    }
 
     @Override
     public String getUsername() {

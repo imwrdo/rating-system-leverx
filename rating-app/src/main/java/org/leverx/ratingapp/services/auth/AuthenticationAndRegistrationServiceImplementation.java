@@ -80,8 +80,8 @@ public class AuthenticationAndRegistrationServiceImplementation implements Authe
         }
 
         var user = User.builder()
-                .first_name(registrationRequestDTO.first_name())
-                .last_name(registrationRequestDTO.last_name())
+                .firstName(registrationRequestDTO.firstName())
+                .lastName(registrationRequestDTO.lastName())
                 .email(registrationRequestDTO.email())
                 .password(passwordEncoder.encode(registrationRequestDTO.password()))
                 .role(Role.SELLER)
@@ -93,7 +93,7 @@ public class AuthenticationAndRegistrationServiceImplementation implements Authe
 
         String link = "http://localhost:8080/auth/confirm?token=" + jwtToken;
         emailService.sendRegistrationEmail(registrationRequestDTO.email(),
-                registrationRequestDTO.first_name(),
+                registrationRequestDTO.firstName(),
                 link);
 
         return AuthenticationResponseDTO.builder()
@@ -112,7 +112,7 @@ public class AuthenticationAndRegistrationServiceImplementation implements Authe
           )
         );
         User user = userRepository.findByEmail(request.email())
-                .filter(User::getIs_activated)
+                .filter(User::getIsActivated)
                 .orElseThrow(() -> new AccountNotActivatedException(
                         userRepository.existsByEmail(request.email())
                                 ? "Please, activate your account"
@@ -175,7 +175,7 @@ public class AuthenticationAndRegistrationServiceImplementation implements Authe
 
         String resetCode = generateResetCode();
         confirmationTokenService.saveResetCode(email, resetCode);
-        emailService.sendPasswordResetEmail(email,user.getFirst_name(), resetCode);
+        emailService.sendPasswordResetEmail(email,user.getFirstName(), resetCode);
 
         return AuthenticationResponseDTO.builder()
                 .user(email)

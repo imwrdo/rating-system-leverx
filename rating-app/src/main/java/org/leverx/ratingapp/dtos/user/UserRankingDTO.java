@@ -6,11 +6,11 @@ import java.time.LocalDateTime;
 
 @Builder
 public record UserRankingDTO(
-        int place,
+        Long place,
         Long id,
-        String first_name,
-        String last_name,
+        String firstName,
+        String lastName,
         String email,
-        LocalDateTime created_at,
+        LocalDateTime createdAt,
         int commentCount
 ) {}

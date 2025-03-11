@@ -97,7 +97,7 @@ public class UserServiceImplementation implements UserDetailsService, UserServic
         }
 
         comments = comments.stream()
-                .filter(Comment::getIs_approved)
+                .filter(Comment::getIsApproved)
                 .toList();
 
         Map<Long, Long> userCommentCount = comments.stream()
@@ -113,12 +113,12 @@ public class UserServiceImplementation implements UserDetailsService, UserServic
                 )
                 .limit(ratingLimit != null && ratingLimit > 0 ? ratingLimit : Long.MAX_VALUE)
                 .map(user -> UserRankingDTO.builder()
-                        .place(users.indexOf(user) + 1)
+                        .place((long) (users.indexOf(user) + 1))
                         .id(user.getId())
-                        .first_name(user.getFirst_name())
-                        .last_name(user.getLast_name())
+                        .firstName(user.getFirstName())
+                        .lastName(user.getLastName())
                         .email(user.getEmail())
-                        .created_at(user.getCreated_at())
+                        .createdAt(user.getCreatedAt())
                         .commentCount(userCommentCount.getOrDefault(user.getId(), 0L).intValue())
                         .build()
                 )

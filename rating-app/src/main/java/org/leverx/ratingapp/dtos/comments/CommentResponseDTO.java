@@ -15,7 +15,7 @@ public record CommentResponseDTO(Long id,String message,String author,String sel
                         .message(comment.getMessage())
                         .author(comment.getAuthor().getEmail())
                         .seller(comment.getSeller().getEmail())
-                        .status(comment.getIs_approved() ? "Approved" : "Pending")
+                        .status(comment.getIsApproved() ? "Approved" : "Pending")
                         .build())
                 .collect(Collectors.toList());
     }

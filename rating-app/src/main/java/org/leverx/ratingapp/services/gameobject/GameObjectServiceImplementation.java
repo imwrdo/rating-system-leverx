@@ -36,7 +36,7 @@ public class GameObjectServiceImplementation implements GameObjectService {
                 .title(gameObject.title())
                 .text(gameObject.text())
                 .userEmail(game.getUser().getEmail())
-                .updated_at(game.getUpdated_at())
+                .updatedAt(game.getUpdatedAt())
                 .status("Created")
                 .build();
     }
@@ -55,7 +55,7 @@ public class GameObjectServiceImplementation implements GameObjectService {
                     authAndRegService.authorizeUser(existingGame, currentUser);
                     existingGame.setTitle(gameObject.title());
                     existingGame.setText(gameObject.text());
-                    existingGame.setUpdated_at(LocalDateTime.now());
+                    existingGame.setUpdatedAt(LocalDateTime.now());
                     gameObjectRepository.save(existingGame);
                     return existingGame;
                 })
@@ -65,7 +65,7 @@ public class GameObjectServiceImplementation implements GameObjectService {
                 .title(gameObject.title())
                 .text(gameObject.text())
                 .userEmail(gameObjectOriginal.getUser().getEmail())
-                .updated_at(gameObjectOriginal.getUpdated_at())
+                .updatedAt(gameObjectOriginal.getUpdatedAt())
                 .status("Updated")
                 .build();
     }

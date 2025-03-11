@@ -38,14 +38,14 @@ public class Comment {
     private User seller;
 
     @Column(name="created_at", nullable = false)
-    private LocalDateTime created_at;
+    private LocalDateTime createdAt;
 
     @Column(name= "is_approved", nullable = false)
-    private Boolean is_approved;
+    private Boolean isApproved;
 
     @PrePersist
     protected void onCreate() {
-        created_at = LocalDateTime.now();
-        is_approved = false;
+        createdAt = LocalDateTime.now();
+        isApproved = false;
     }
 }

@@ -81,7 +81,7 @@ public class CommentServiceImplementation implements CommentService {
 
         Comment comment = commentRepository.findByIdAndSellerId(commentId, sellerId)
                 .filter(c -> isAdmin
-                        || c.getIs_approved()
+                        || c.getIsApproved()
                         || c.getAuthor().getEmail().equals(currentUser.getEmail()))
                 .orElseThrow(() ->
                         new ResourceNotFoundException(String.format("Comment for seller %d and id %d not found", sellerId, commentId)));
@@ -90,7 +90,7 @@ public class CommentServiceImplementation implements CommentService {
                 .message(comment.getMessage())
                 .author(comment.getAuthor().getEmail())
                 .seller(comment.getSeller().getEmail())
-                .status(comment.getIs_approved()?"Approved":"Pending")
+                .status(comment.getIsApproved()?"Approved":"Pending")
                 .build();
     }
 
@@ -158,7 +158,7 @@ public class CommentServiceImplementation implements CommentService {
                         new RuntimeException(String.format("Comment for seller %d and id %d not found", sellerId, commentId)));
 
         if (confirm) {
-            comment.setIs_approved(true);
+            comment.setIsApproved(true);
             commentRepository.save(comment);
         } else {
             commentRepository.delete(comment);

@@ -12,12 +12,12 @@ import java.util.List;
 
 @RestController
 @AllArgsConstructor
-@RequestMapping(path ="users")
+@RequestMapping(path ="users/{seller_id}/comments")
 public class CommentController {
 
     private final CommentService commentService;
 
-    @PostMapping(path ="{seller_id}/comments")
+    @PostMapping
     public ResponseEntity<CommentResponseDTO> create(
             @PathVariable Long seller_id,
             @RequestBody CommentRequestDTO commentObject){
@@ -28,21 +28,21 @@ public class CommentController {
         ).body(response);
     }
 
-    @GetMapping(path ="{seller_id}/comments")
+    @GetMapping
     public ResponseEntity<List<CommentResponseDTO>> getAllAcceptedComments(
             @PathVariable Long seller_id){
 
         return ResponseEntity.ok(commentService.getAllBySellerId(seller_id,false));
     }
 
-    @GetMapping(path ="{seller_id}/comments/{comment_id}")
+    @GetMapping(path ="{comment_id}")
     public ResponseEntity<CommentResponseDTO> getComment(
             @PathVariable Long seller_id,
             @PathVariable Long comment_id){
         return ResponseEntity.ok(commentService.getComment(seller_id,comment_id,false));
     }
 
-    @DeleteMapping(path = "{seller_id}/comments/{comment_id}")
+    @DeleteMapping(path = "{comment_id}")
     public ResponseEntity<String> delete(
             @PathVariable Long seller_id,
             @PathVariable Long comment_id){
@@ -51,7 +51,7 @@ public class CommentController {
     }
 
 
-    @PutMapping(path = "{seller_id}/comments/{comment_id}")
+    @PutMapping(path = "{comment_id}")
     public ResponseEntity<CommentResponseDTO> update(
             @PathVariable Long seller_id,
             @PathVariable Long comment_id,

@@ -21,6 +21,6 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
 
     Optional<Comment> findBySellerId(Long sellerId);
 
-    @Query("SELECT c FROM Comment c WHERE c.is_approved = true")
+    @Query("SELECT c FROM Comment c WHERE c.isApproved = true")
     List<Comment> findAllAcceptedBySellerId(Long sellerId);
 }

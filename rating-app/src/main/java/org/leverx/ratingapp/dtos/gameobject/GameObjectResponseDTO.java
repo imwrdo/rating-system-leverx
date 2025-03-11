@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Builder
-public record GameObjectResponseDTO(Long id, String title, String text, String userEmail, LocalDateTime updated_at, String status) {
+public record GameObjectResponseDTO(Long id, String title, String text, String userEmail, LocalDateTime updatedAt, String status) {
 
     public static List<GameObjectResponseDTO> mapToGameObjectResponseDTO(List<GameObject> gameObjects){
         return gameObjects.stream()
@@ -17,7 +17,7 @@ public record GameObjectResponseDTO(Long id, String title, String text, String u
                         .title(gameObject.getTitle())
                         .text(gameObject.getText())
                         .userEmail(gameObject.getUser().getEmail())
-                        .updated_at(gameObject.getUpdated_at())
+                        .updatedAt(gameObject.getUpdatedAt())
                         .status("Active")
                         .build())
                 .collect(Collectors.toList());

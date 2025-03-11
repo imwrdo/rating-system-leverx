@@ -19,19 +19,19 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Transactional
     @Modifying
     @Query("UPDATE User a " +
-            "SET a.is_activated = TRUE WHERE a.email = ?1")
+            "SET a.isActivated = TRUE WHERE a.email = ?1")
     void enableUser(String email);
 
-    @Query("SELECT u FROM User u WHERE u.is_activated = true")
+    @Query("SELECT u FROM User u WHERE u.isActivated = true")
     List<User> findAllActiveUsers();
 
-    @Query("SELECT u FROM User u WHERE u.is_activated = true AND u.id = ?1")
+    @Query("SELECT u FROM User u WHERE u.isActivated = true AND u.id = ?1")
     Optional<User> findActiveUserById(Long id);
 
-    @Query("SELECT u FROM User u WHERE u.is_activated = false")
+    @Query("SELECT u FROM User u WHERE u.isActivated = false")
     List<User> findAllInactiveUsers();
 
-    @Query("SELECT COUNT(u) > 0 FROM User u WHERE u.is_activated = true AND u.id = ?1")
+    @Query("SELECT COUNT(u) > 0 FROM User u WHERE u.isActivated = true AND u.id = ?1")
     boolean existsActiveUserById(Long user_id);
 
     void deleteUserByEmail(String email);

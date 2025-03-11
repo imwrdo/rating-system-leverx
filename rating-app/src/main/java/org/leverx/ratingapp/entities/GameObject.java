@@ -35,15 +35,15 @@ public class GameObject {
     private User user;
 
     @Column(name="created_at", nullable = false)
-    private LocalDateTime created_at;
+    private LocalDateTime createdAt;
 
     @Column(name="updated_at", nullable = false)
-    private LocalDateTime updated_at;
+    private LocalDateTime updatedAt;
 
     @PrePersist
     protected void onCreate() {
-        created_at = LocalDateTime.now();
-        updated_at = created_at;
+        createdAt = LocalDateTime.now();
+        updatedAt = createdAt;
     }
 
 
