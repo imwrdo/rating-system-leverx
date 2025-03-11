@@ -28,11 +28,14 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("SELECT u FROM User u WHERE u.isActivated = true AND u.id = ?1")
     Optional<User> findActiveUserById(Long id);
 
-    @Query("SELECT u FROM User u WHERE u.isActivated = false")
+    @Query("SELECT u FROM User u WHERE u.isEmailConfirmed = false AND u.isActivated = false")
     List<User> findAllInactiveUsers();
 
     @Query("SELECT COUNT(u) > 0 FROM User u WHERE u.isActivated = true AND u.id = ?1")
     boolean existsActiveUserById(Long user_id);
+
+    @Query("SELECT u FROM User u WHERE u.isEmailConfirmed = true AND u.isActivated = false")
+    List<User> findPendingUsers();
 
     void deleteUserByEmail(String email);
 }

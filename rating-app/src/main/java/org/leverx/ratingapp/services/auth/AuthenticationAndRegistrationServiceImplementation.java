@@ -115,7 +115,7 @@ public class AuthenticationAndRegistrationServiceImplementation implements Authe
                 .filter(User::getIsActivated)
                 .orElseThrow(() -> new AccountNotActivatedException(
                         userRepository.existsByEmail(request.email())
-                                ? "Please, activate your account"
+                                ? "Please wait, we are validating your account"
                                 : "Please, check your email"
                 ));
 
@@ -129,7 +129,7 @@ public class AuthenticationAndRegistrationServiceImplementation implements Authe
     }
 
     @Override
-    public String confirmToken(String token) {
+    public String confirmEmail(String token) {
         var userEmail = jwtService.extractUsername(token);
         if (userEmail == null) {
             throw new InvalidOperationException("Invalid token");
@@ -142,30 +142,36 @@ public class AuthenticationAndRegistrationServiceImplementation implements Authe
             throw new InvalidOperationException("Invalid token");
         }
 
-        userService.enableUser(userEmail);
-        confirmationTokenService.removeConfirmationToken(userEmail);
-        return "confirmed";
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new InvalidOperationException("User not found"));
+        user.setIsEmailConfirmed(true);
+        userRepository.save(user);
+        
+        return "Email confirmed. Waiting for admin approval.";
     }
 
     @Override
     public String confirmUser(String email, Boolean confirm) {
-
         if (email == null) {
             throw new InvalidOperationException("Invalid email");
         }
 
-        confirmationTokenService.getConfirmationToken(email)
-                .orElseThrow(() -> new InvalidOperationException("Token not found or expired"));
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new InvalidOperationException("User not found"));
 
-        if(!confirm) {
+        if (!user.getIsEmailConfirmed()) {
+            throw new InvalidOperationException("Email not confirmed by user");
+        }
+
+        if (!confirm) {
             userRepository.deleteUserByEmail(email);
             confirmationTokenService.removeConfirmationToken(email);
-            return "Declined";
+            return "User registration declined";
         }
 
         userService.enableUser(email);
         confirmationTokenService.removeConfirmationToken(email);
-        return "confirmed";
+        return "User approved and activated";
     }
 
     @Override

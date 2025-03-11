@@ -27,6 +27,11 @@ public class AdminController {
         return ResponseEntity.status(202).body(authAndRegService.confirmUser(email,confirm));
     }
 
+    @GetMapping(path = "users/pending")
+    public ResponseEntity<List<UserDTO>> getPendingUsers() {
+        return ResponseEntity.ok(userService.getPendingUsers());
+    }
+
     @GetMapping(path= "users")
     public ResponseEntity<List<UserDTO>> getAllUsers(){
         return ResponseEntity.ok(userService.getAllUsers(false,true));

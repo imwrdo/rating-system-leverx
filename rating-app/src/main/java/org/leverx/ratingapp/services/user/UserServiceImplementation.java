@@ -80,6 +80,12 @@ public class UserServiceImplementation implements UserDetailsService, UserServic
     }
 
     @Override
+    public List<UserDTO> getPendingUsers() {
+        List<User> users = userRepository.findPendingUsers();
+        return mapToUsersDTO(users, true);
+    }
+
+    @Override
     public List<UserRankingDTO> getUserRating(String gameName, Long ratingLimit) {
         List<User> users = userRepository.findAllActiveUsers();
         List<Comment> comments = commentRepository.findAll();

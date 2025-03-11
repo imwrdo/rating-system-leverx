@@ -11,7 +11,7 @@ public interface AuthenticationAndRegistrationService {
      <T> void authorizeUser(T entity, User currentUser);
      AuthenticationResponseDTO register(RegistrationRequestDTO registrationRequestDTO);
      AuthenticationResponseDTO authenticate(AuthenticationRequestDTO request);
-     String confirmToken(String token);
+     String confirmEmail(String token);
      AuthenticationResponseDTO initiatePasswordReset(String email);
      AuthenticationResponseDTO resetPassword(PasswordResetRequestDTO request);
      AuthenticationResponseDTO verifyResetCode(String email, String code);

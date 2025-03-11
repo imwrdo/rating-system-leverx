@@ -23,8 +23,7 @@ public class RegistrationController {
 
     @GetMapping(path = "confirm")
     public ResponseEntity<String> confirm(@RequestParam("token") String token){
-
-        return ResponseEntity.ok(service.confirmToken(token));
+        return ResponseEntity.ok(service.confirmEmail(token));
     }
 
     @PostMapping("authenticate")

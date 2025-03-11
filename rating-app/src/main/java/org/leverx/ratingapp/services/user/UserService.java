@@ -11,4 +11,5 @@ public interface UserService {
      List<UserDTO> getAllUsers(boolean onlyActive, boolean isAdmin);
      UserDTO getUserById(Long user_id, boolean onlyActive);
      List<UserDTO> getInactiveUsers();
+     List<UserDTO> getPendingUsers();
 }
