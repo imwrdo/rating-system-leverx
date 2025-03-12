@@ -9,7 +9,7 @@ import org.leverx.ratingapp.entities.User;
 import org.leverx.ratingapp.exceptions.ResourceNotFoundException;
 import org.leverx.ratingapp.repositories.CommentRepository;
 import org.leverx.ratingapp.repositories.UserRepository;
-import org.leverx.ratingapp.services.auth.AuthenticationAndRegistrationServiceImplementation;
+import org.leverx.ratingapp.services.auth.AuthenticationAndRegistrationService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -21,7 +21,7 @@ import java.util.stream.Stream;
 @Transactional
 public class CommentServiceImplementation implements CommentService {
     private CommentRepository commentRepository;
-    private AuthenticationAndRegistrationServiceImplementation authAndRegService;
+    private AuthenticationAndRegistrationService authAndRegService;
     private UserRepository userRepository;
 
     @Override

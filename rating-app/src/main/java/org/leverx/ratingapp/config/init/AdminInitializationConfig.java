@@ -1,4 +1,4 @@
-package org.leverx.ratingapp.config;
+package org.leverx.ratingapp.config.init;
 
 import lombok.RequiredArgsConstructor;
 import org.leverx.ratingapp.entities.User;
