@@ -39,6 +39,7 @@ public class CommentController {
             @RequestBody CommentWithRegistrationRequestDTO request) {
 
         boolean sellerExists = userRepository.existsById(seller_id);
+        CommentResponseDTO response;
 
         if (!sellerExists) {
             RegistrationRequestDTO registrationRequest = new RegistrationRequestDTO(
@@ -47,10 +48,17 @@ public class CommentController {
                     request.password(),
                     request.email()
             );
-            authAndRegService.register(registrationRequest);
+            // Register user first
+            authAndRegService.registerWithPendingComment(registrationRequest, seller_id, request.message());
+            
+            // Return temporary response
+            response = CommentResponseDTO.builder()
+                    .message(request.message())
+                    .status("Comment pending - awaiting account activation")
+                    .build();
+        } else {
+            response = commentService.create(seller_id, new CommentRequestDTO(request.message()));
         }
-
-        CommentResponseDTO response = commentService.create(seller_id, new CommentRequestDTO(request.message()));
 
         return ResponseEntity.created(
                 URI.create(String.format("/users/%d/comments/%d", seller_id, response.id()))

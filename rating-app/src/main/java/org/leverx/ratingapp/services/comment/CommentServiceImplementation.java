@@ -7,12 +7,10 @@ import org.leverx.ratingapp.dtos.comments.CommentResponseDTO;
 import org.leverx.ratingapp.entities.Comment;
 import org.leverx.ratingapp.entities.User;
 import org.leverx.ratingapp.exceptions.ResourceNotFoundException;
-import org.leverx.ratingapp.exceptions.UnauthorizedException;
 import org.leverx.ratingapp.repositories.CommentRepository;
 import org.leverx.ratingapp.repositories.UserRepository;
-import org.leverx.ratingapp.services.auth.AuthenticationAndRegistrationService;
+import org.leverx.ratingapp.services.auth.AuthorizationService;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -20,25 +18,16 @@ import java.util.stream.Stream;
 @Service
 @AllArgsConstructor
 public class CommentServiceImplementation implements CommentService {
-    private CommentRepository commentRepository;
-    private AuthenticationAndRegistrationService authAndRegService;
-    private UserRepository userRepository;
+    private final CommentRepository commentRepository;
+    private final UserRepository userRepository;
+    private final AuthorizationService authorizationService;
 
     @Transactional
     @Override
     public CommentResponseDTO create(Long sellerId, CommentRequestDTO commentObject) {
-
-        User currentUser;
-        try {
-            currentUser = authAndRegService.getCurrentUser();
-        } catch (UnauthorizedException e) {
-            currentUser = null;
-        }
-
-
+        User currentUser = authorizationService.getCurrentUser();
         User seller = userRepository.findActiveUserById(sellerId)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(String.format("Seller with id %d not found",sellerId)));
+                .orElseThrow(() -> new ResourceNotFoundException(String.format("Seller with id %d not found", sellerId)));
 
         var comment = Comment.builder()
                 .message(commentObject.message())
@@ -50,23 +39,15 @@ public class CommentServiceImplementation implements CommentService {
         return CommentResponseDTO.builder()
                 .id(comment.getId())
                 .message(comment.getMessage())
-                .author(null)
-                .seller(comment.getSeller().getEmail())
+                .author(currentUser != null ? currentUser.getEmail() : null)
+                .seller(seller.getEmail())
                 .status("Comment is created, please wait for verification")
                 .build();
     }
 
-
     @Override
     public List<CommentResponseDTO> getAllBySellerId(Long sellerId, Boolean isAdmin) {
-        User currentUser;
-        try{
-            currentUser = authAndRegService.getCurrentUser();
-        }catch(UnauthorizedException e){
-            System.out.println("Found an unauthorized user");
-            currentUser = null;
-        }
-
+        User currentUser = authorizationService.getCurrentUser();
 
         boolean isSellerExists = isAdmin
                 ? userRepository.existsById(sellerId)
@@ -104,7 +85,7 @@ public class CommentServiceImplementation implements CommentService {
 
     @Override
     public CommentResponseDTO getComment(Long sellerId, Long commentId, Boolean isAdmin) {
-        User currentUser = authAndRegService.getCurrentUser();
+        User currentUser = authorizationService.getCurrentUser();
 
         Comment comment = commentRepository.findByIdAndSellerId(commentId, sellerId)
                 .filter(c -> isAdmin
@@ -124,21 +105,11 @@ public class CommentServiceImplementation implements CommentService {
     @Transactional
     @Override
     public String delete(Long sellerId, Long commentId) {
-        userRepository.findById(sellerId)
-                .orElseThrow(() ->
-                        new RuntimeException(String.format("Seller with id %d not found",sellerId)));
-        commentRepository.findById(commentId)
-                .orElseThrow(()->
-                        new RuntimeException(String.format("Comment with id %d not found",commentId)));
-
-        User currentUser = authAndRegService.getCurrentUser();
-
-        Comment existingComment = commentRepository.findByIdAndSellerId(commentId,sellerId)
-                .orElseThrow(() ->
-                        new RuntimeException(String.format("Comment for seller %d and id %d not found",sellerId,commentId)));
-
-        authAndRegService.authorizeUser(existingComment,currentUser);
-        commentRepository.delete(existingComment);
+        User currentUser = authorizationService.getRequiredCurrentUser();
+        Comment comment = getRequiredComment(sellerId, commentId);
+        
+        authorizationService.authorizeResourceModification(comment, currentUser);
+        commentRepository.delete(comment);
 
         return "Your comment is deleted successfully";
     }
@@ -147,7 +118,7 @@ public class CommentServiceImplementation implements CommentService {
     @Override
     public CommentResponseDTO update(Long sellerId, Long commentId, CommentRequestDTO commentObject) {
 
-        User currentUser = authAndRegService.getCurrentUser();
+        User currentUser = authorizationService.getCurrentUser();
         userRepository.findById(sellerId)
                 .orElseThrow(() ->
                         new RuntimeException(String.format("Seller with id %d not found", sellerId)));
@@ -158,7 +129,7 @@ public class CommentServiceImplementation implements CommentService {
 
         var comment =  commentRepository.findByIdAndSellerId(commentId,sellerId)
                 .map(existingComment -> {
-                    authAndRegService.authorizeUser(existingComment,currentUser);
+                    authorizationService.authorizeResourceModification(existingComment,currentUser);
                     existingComment.setMessage(commentObject.message());
                     commentRepository.save(existingComment);
                     return existingComment;
@@ -208,5 +179,9 @@ public class CommentServiceImplementation implements CommentService {
         return CommentResponseDTO.mapToCommentResponseDTO(comments);
     }
 
-
+    private Comment getRequiredComment(Long sellerId, Long commentId) {
+        return commentRepository.findByIdAndSellerId(commentId, sellerId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        String.format("Comment for seller %d and id %d not found", sellerId, commentId)));
+    }
 }

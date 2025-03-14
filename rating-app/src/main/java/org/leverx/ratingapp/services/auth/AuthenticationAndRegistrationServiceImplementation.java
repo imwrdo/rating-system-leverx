@@ -6,35 +6,27 @@ import org.leverx.ratingapp.dtos.auth.AuthenticationRequestDTO;
 import org.leverx.ratingapp.dtos.auth.AuthenticationResponseDTO;
 import org.leverx.ratingapp.dtos.auth.PasswordResetRequestDTO;
 import org.leverx.ratingapp.dtos.auth.registration.RegistrationRequestDTO;
-import org.leverx.ratingapp.entities.Comment;
-import org.leverx.ratingapp.entities.GameObject;
 import org.leverx.ratingapp.entities.User;
 import org.leverx.ratingapp.exceptions.AccountNotActivatedException;
 import org.leverx.ratingapp.repositories.UserRepository;
 import org.leverx.ratingapp.services.auth.jwt.JwtService;
 import org.leverx.ratingapp.services.auth.token.ConfirmationTokenService;
+import org.leverx.ratingapp.services.pendingcomment.PendingCommentService;
 import org.leverx.ratingapp.services.user.UserService;
 import org.leverx.ratingapp.services.email.EmailService;
 import org.leverx.ratingapp.services.email.validation.EmailValidatorService;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-
 import org.leverx.ratingapp.enums.Role;
-import org.leverx.ratingapp.exceptions.UnauthorizedException;
 import org.leverx.ratingapp.exceptions.InvalidOperationException;
-import org.leverx.ratingapp.exceptions.ForbiddenException;
-
 import java.security.SecureRandom;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class AuthenticationAndRegistrationServiceImplementation implements AuthenticationAndRegistrationService {
     private final EmailValidatorService emailValidatorService;
     private final ConfirmationTokenService confirmationTokenService;
@@ -44,29 +36,19 @@ public class AuthenticationAndRegistrationServiceImplementation implements Authe
     private final UserService userService;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final PendingCommentService pendingCommentService;
+    private final AuthorizationService authorizationService;
 
     @Override
     public User getCurrentUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        return Optional.ofNullable(authentication)
-                .filter(auth -> auth.getPrincipal() instanceof UserDetails)
-                .map(auth -> (User) auth.getPrincipal())
-                .orElseThrow(() -> new UnauthorizedException("User not authenticated"));
+        return authorizationService.getRequiredCurrentUser();
     }
 
-    @Transactional
     @Override
     public <T> void authorizeUser(T entity, User currentUser) {
-        User entityAuthor = null;
-        if (entity instanceof Comment comment) {
-            entityAuthor = comment.getAuthor();
-        } else if (entity instanceof GameObject gameObject) {
-            entityAuthor = gameObject.getUser();
-        }
-        if (entityAuthor == null || !entityAuthor.getId().equals(currentUser.getId())) {
-            throw new ForbiddenException("You do not have permission to modify this resource");
-        }
+        authorizationService.authorizeResourceModification(entity, currentUser);
     }
+
     @Transactional
     @Override
     public AuthenticationResponseDTO register(RegistrationRequestDTO registrationRequestDTO) {
@@ -101,6 +83,17 @@ public class AuthenticationAndRegistrationServiceImplementation implements Authe
                 .token(jwtToken)
                 .Status("Your registration is in progress")
                 .build();
+    }
+
+    @Override
+    public AuthenticationResponseDTO registerWithPendingComment(RegistrationRequestDTO registrationRequestDTO, Long sellerId, String comment) {
+        // Register user
+        AuthenticationResponseDTO response = register(registrationRequestDTO);
+        
+        // Store pending comment
+        pendingCommentService.savePendingComment(registrationRequestDTO.email(), sellerId, comment);
+        
+        return response;
     }
 
     @Transactional
@@ -174,8 +167,11 @@ public class AuthenticationAndRegistrationServiceImplementation implements Authe
 
         userService.enableUser(email);
         confirmationTokenService.removeConfirmationToken(email);
-        return "User approved and activated";
+        pendingCommentService.processPendingComment(email);
+        
+        return "User approved and activated with pending comments processed";
     }
+
     @Transactional
     @Override
     public AuthenticationResponseDTO initiatePasswordReset(String email) {
