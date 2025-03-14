@@ -71,8 +71,6 @@ public class UserServiceImplementation implements UserDetailsService, UserServic
         );
     }
 
-
-
     @Override
     public List<UserDTO> getInactiveUsers() {
         List<User> users = userRepository.findAllInactiveUsers();
@@ -97,8 +95,7 @@ public class UserServiceImplementation implements UserDetailsService, UserServic
                     .map(GameObject::getId)
                     .toList();
             comments = comments.stream()
-                    .filter(comment -> relatedGameIds
-                            .contains(comment.getSeller().getId()))
+                    .filter(comment -> relatedGameIds.contains(comment.getSeller().getId()))
                     .toList();
         }
 

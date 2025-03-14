@@ -1,7 +1,8 @@
 package org.leverx.ratingapp.enums;
 
-import java.util.Arrays;
+import lombok.Getter;
 
+@Getter
 public enum Role {
     SELLER("SELLER"), ADMIN("ADMIN");
 
@@ -11,14 +12,4 @@ public enum Role {
         this.valueOfRole = valueOfRole;
     }
 
-    public String getValueOfRole() {
-        return valueOfRole;
-    }
-
-    public Role getRoleFromString(String role) {
-        return Arrays.stream(values())
-                .filter(c -> c.getValueOfRole().equals(valueOfRole))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Invalid character: " + valueOfRole));
-    }
 }

@@ -6,6 +6,7 @@ import org.leverx.ratingapp.dtos.comments.CommentRequestDTO;
 import org.leverx.ratingapp.dtos.comments.CommentResponseDTO;
 import org.leverx.ratingapp.entities.Comment;
 import org.leverx.ratingapp.entities.User;
+import org.leverx.ratingapp.enums.Status;
 import org.leverx.ratingapp.exceptions.ResourceNotFoundException;
 import org.leverx.ratingapp.repositories.CommentRepository;
 import org.leverx.ratingapp.repositories.UserRepository;
@@ -27,7 +28,8 @@ public class CommentServiceImplementation implements CommentService {
     public CommentResponseDTO create(Long sellerId, CommentRequestDTO commentObject) {
         User currentUser = authorizationService.getCurrentUser();
         User seller = userRepository.findActiveUserById(sellerId)
-                .orElseThrow(() -> new ResourceNotFoundException(String.format("Seller with id %d not found", sellerId)));
+                .orElseThrow(() -> new ResourceNotFoundException(String.format("Seller with id %d not found",
+                        sellerId)));
 
         var comment = Comment.builder()
                 .message(commentObject.message())
@@ -41,7 +43,8 @@ public class CommentServiceImplementation implements CommentService {
                 .message(comment.getMessage())
                 .author(currentUser != null ? currentUser.getEmail() : null)
                 .seller(seller.getEmail())
-                .status("Comment is created, please wait for verification")
+                .status(String.format("Comment is %s, please wait for verification",
+                        Status.CREATED.getValueOfStatus()))
                 .build();
     }
 
@@ -50,11 +53,14 @@ public class CommentServiceImplementation implements CommentService {
         User currentUser = authorizationService.getCurrentUser();
 
         boolean isSellerExists = isAdmin
-                ? userRepository.existsById(sellerId)
-                : userRepository.existsActiveUserById(sellerId);
+                ? userRepository
+                    .existsById(sellerId)
+                : userRepository
+                    .existsActiveUserById(sellerId);
 
         if (!isSellerExists) {
-            throw new ResourceNotFoundException(String.format("Seller with id %d not found", sellerId));
+            throw new ResourceNotFoundException(String.format("Seller with id %d not found",
+                    sellerId));
         }
 
         List<Comment> comments;
@@ -98,7 +104,10 @@ public class CommentServiceImplementation implements CommentService {
                 .message(comment.getMessage())
                 .author(comment.getAuthor().getEmail())
                 .seller(comment.getSeller().getEmail())
-                .status(comment.getIsApproved()?"Approved":"Pending")
+                .status(comment.getIsApproved()
+                        ? Status.APPROVED.getValueOfStatus()
+                        : Status.PENDING.getValueOfStatus()
+                )
                 .build();
     }
 
@@ -111,7 +120,9 @@ public class CommentServiceImplementation implements CommentService {
         authorizationService.authorizeResourceModification(comment, currentUser);
         commentRepository.delete(comment);
 
-        return "Your comment is deleted successfully";
+        return String.format("Comment %s is %s",
+                commentId,
+                Status.DELETED.getValueOfStatus());
     }
 
     @Transactional
@@ -121,11 +132,11 @@ public class CommentServiceImplementation implements CommentService {
         User currentUser = authorizationService.getCurrentUser();
         userRepository.findById(sellerId)
                 .orElseThrow(() ->
-                        new RuntimeException(String.format("Seller with id %d not found", sellerId)));
+                        new ResourceNotFoundException(String.format("Seller with id %d not found", sellerId)));
 
         commentRepository.findById(commentId)
                 .orElseThrow(()->
-                        new RuntimeException(String.format("Comment with id %d not found", commentId)));
+                        new ResourceNotFoundException(String.format("Comment with id %d not found", commentId)));
 
         var comment =  commentRepository.findByIdAndSellerId(commentId,sellerId)
                 .map(existingComment -> {
@@ -134,13 +145,13 @@ public class CommentServiceImplementation implements CommentService {
                     commentRepository.save(existingComment);
                     return existingComment;
                 })
-                .orElseThrow(() -> new RuntimeException(String.format("Comment for seller %d and id %d not found",sellerId,commentId)));
+                .orElseThrow(() -> new ResourceNotFoundException(String.format("Comment for seller %d and id %d not found",sellerId,commentId)));
         return CommentResponseDTO.builder()
                 .id(comment.getId())
                 .message(comment.getMessage())
                 .author(comment.getAuthor().getEmail())
                 .seller(comment.getSeller().getEmail())
-                .status("Modified")
+                .status(Status.UPDATED.getValueOfStatus())
                 .build();
     }
 
@@ -149,13 +160,13 @@ public class CommentServiceImplementation implements CommentService {
     public CommentResponseDTO approveComment(Long sellerId, Long commentId,Boolean confirm) {
         // Ensure seller exists
         if (!userRepository.existsById(sellerId)) {
-            throw new RuntimeException(String.format("Seller with id %d not found", sellerId));
+            throw new ResourceNotFoundException(String.format("Seller with id %d not found", sellerId));
         }
 
         // Fetch and handle the comment
         Comment comment = commentRepository.findByIdAndSellerId(commentId, sellerId)
                 .orElseThrow(() ->
-                        new RuntimeException(String.format("Comment for seller %d and id %d not found", sellerId, commentId)));
+                        new ResourceNotFoundException(String.format("Comment for seller %d and id %d not found", sellerId, commentId)));
 
         if (confirm) {
             comment.setIsApproved(true);
@@ -169,7 +180,10 @@ public class CommentServiceImplementation implements CommentService {
                 .message(comment.getMessage())
                 .author(comment.getAuthor().getEmail())
                 .seller(comment.getSeller().getEmail())
-                .status(confirm ? "Approved" : "Deleted")
+                .status(confirm
+                        ? Status.APPROVED.getValueOfStatus()
+                        : Status.DELETED.getValueOfStatus()
+                )
                 .build();
     }
 

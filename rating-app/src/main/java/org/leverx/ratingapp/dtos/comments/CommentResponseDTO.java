@@ -2,6 +2,8 @@ package org.leverx.ratingapp.dtos.comments;
 
 import lombok.Builder;
 import org.leverx.ratingapp.entities.Comment;
+import org.leverx.ratingapp.enums.Status;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -15,7 +17,9 @@ public record CommentResponseDTO(Long id,String message,String author,String sel
                         .message(comment.getMessage())
                         .author(comment.getAuthor().getEmail())
                         .seller(comment.getSeller().getEmail())
-                        .status(comment.getIsApproved() ? "Approved" : "Pending")
+                        .status(comment.getIsApproved()
+                                ? Status.APPROVED.getValueOfStatus()
+                                : Status.PENDING.getValueOfStatus())
                         .build())
                 .collect(Collectors.toList());
     }

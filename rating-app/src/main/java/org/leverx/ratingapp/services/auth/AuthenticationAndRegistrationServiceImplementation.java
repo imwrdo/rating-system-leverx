@@ -7,7 +7,9 @@ import org.leverx.ratingapp.dtos.auth.AuthenticationResponseDTO;
 import org.leverx.ratingapp.dtos.auth.PasswordResetRequestDTO;
 import org.leverx.ratingapp.dtos.auth.registration.RegistrationRequestDTO;
 import org.leverx.ratingapp.entities.User;
+import org.leverx.ratingapp.enums.Status;
 import org.leverx.ratingapp.exceptions.AccountNotActivatedException;
+import org.leverx.ratingapp.exceptions.ResourceNotFoundException;
 import org.leverx.ratingapp.repositories.UserRepository;
 import org.leverx.ratingapp.services.auth.jwt.JwtService;
 import org.leverx.ratingapp.services.auth.token.ConfirmationTokenService;
@@ -81,7 +83,7 @@ public class AuthenticationAndRegistrationServiceImplementation implements Authe
         return AuthenticationResponseDTO.builder()
                 .user(registrationRequestDTO.email())
                 .token(jwtToken)
-                .Status("Your registration is in progress")
+                .Status(Status.PENDING.getValueOfStatus())
                 .build();
     }
 
@@ -118,7 +120,7 @@ public class AuthenticationAndRegistrationServiceImplementation implements Authe
                 .builder()
                 .user(request.email())
                 .token(jwtToken)
-                .Status("You are authenticated")
+                .Status(Status.AUTHENTICATED.getValueOfStatus())
                 .build();
     }
 
@@ -131,18 +133,19 @@ public class AuthenticationAndRegistrationServiceImplementation implements Authe
         }
 
         var storedToken = confirmationTokenService.getConfirmationToken(userEmail)
-                .orElseThrow(() -> new InvalidOperationException("Token not found or expired"));
+                .orElseThrow(() -> new ResourceNotFoundException("Token not found or expired"));
 
         if (!token.equals(storedToken)) {
             throw new InvalidOperationException("Invalid token");
         }
 
         User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new InvalidOperationException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         user.setIsEmailConfirmed(true);
         userRepository.save(user);
         
-        return "Email confirmed. Waiting for admin approval.";
+        return String.format("Email is %s. Waiting for admin approval.",
+                Status.ACTIVE.getValueOfStatus());
     }
 
     @Transactional
@@ -153,7 +156,7 @@ public class AuthenticationAndRegistrationServiceImplementation implements Authe
         }
 
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new InvalidOperationException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         if (!user.getIsEmailConfirmed()) {
             throw new InvalidOperationException("Email not confirmed by user");
@@ -162,14 +165,16 @@ public class AuthenticationAndRegistrationServiceImplementation implements Authe
         if (!confirm) {
             userRepository.deleteUserByEmail(email);
             confirmationTokenService.removeConfirmationToken(email);
-            return "User registration declined";
+            return String.format("User registration is %s",
+                    Status.DELETED.getValueOfStatus());
         }
 
         userService.enableUser(email);
         confirmationTokenService.removeConfirmationToken(email);
         pendingCommentService.processPendingComment(email);
         
-        return "User approved and activated with pending comments processed";
+        return String.format("User %s and %s with pending comments processed",
+                Status.ACTIVE.getValueOfStatus(), Status.APPROVED.getValueOfStatus());
     }
 
     @Transactional
@@ -184,7 +189,7 @@ public class AuthenticationAndRegistrationServiceImplementation implements Authe
 
         return AuthenticationResponseDTO.builder()
                 .user(email)
-                .Status("Password reset code sent")
+                .Status(Status.SENT.getValueOfStatus())
                 .build();
     }
 
@@ -197,7 +202,7 @@ public class AuthenticationAndRegistrationServiceImplementation implements Authe
         }
 
         User user = userRepository.findByEmail(request.email())
-                .orElseThrow(() -> new InvalidOperationException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         user.setPassword(passwordEncoder.encode(request.newPassword()));
         userRepository.save(user);

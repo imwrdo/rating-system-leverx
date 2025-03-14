@@ -2,6 +2,7 @@ package org.leverx.ratingapp.dtos.gameobject;
 
 import lombok.Builder;
 import org.leverx.ratingapp.entities.GameObject;
+import org.leverx.ratingapp.enums.Status;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -18,7 +19,7 @@ public record GameObjectResponseDTO(Long id, String title, String text, String u
                         .text(gameObject.getText())
                         .userEmail(gameObject.getUser().getEmail())
                         .updatedAt(gameObject.getUpdatedAt())
-                        .status("Active")
+                        .status(Status.ACTIVE.getValueOfStatus())
                         .build())
                 .collect(Collectors.toList());
     }

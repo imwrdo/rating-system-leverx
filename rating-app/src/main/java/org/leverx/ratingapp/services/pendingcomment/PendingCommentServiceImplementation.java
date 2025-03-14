@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class PendingCommentServiceImplementation implements PendingCommentService {
     private final PendingCommentRepository pendingCommentRepository;
@@ -33,7 +34,6 @@ public class PendingCommentServiceImplementation implements PendingCommentServic
     }
 
     @Override
-    @Transactional
     public void processPendingComment(String email) {
         String pendingCommentJson = pendingCommentRepository.getPendingComment(email);
         if (pendingCommentJson != null) {

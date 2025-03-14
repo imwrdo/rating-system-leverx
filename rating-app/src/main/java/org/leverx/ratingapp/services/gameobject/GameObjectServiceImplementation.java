@@ -6,6 +6,7 @@ import org.leverx.ratingapp.dtos.gameobject.GameObjectRequestDTO;
 import org.leverx.ratingapp.dtos.gameobject.GameObjectResponseDTO;
 import org.leverx.ratingapp.entities.GameObject;
 import org.leverx.ratingapp.entities.User;
+import org.leverx.ratingapp.enums.Status;
 import org.leverx.ratingapp.repositories.GameObjectRepository;
 import org.leverx.ratingapp.services.auth.AuthenticationAndRegistrationServiceImplementation;
 import org.springframework.stereotype.Service;
@@ -66,7 +67,7 @@ public class GameObjectServiceImplementation implements GameObjectService {
                 .text(gameObject.text())
                 .userEmail(gameObjectOriginal.getUser().getEmail())
                 .updatedAt(gameObjectOriginal.getUpdatedAt())
-                .status("Updated")
+                .status(Status.UPDATED.getValueOfStatus())
                 .build();
     }
 
@@ -81,6 +82,6 @@ public class GameObjectServiceImplementation implements GameObjectService {
                     return existingGame;
                 })
                 .orElseThrow(() -> new RuntimeException("Game object not found"));
-        return "Game object deleted";
+        return Status.DELETED.getValueOfStatus();
     }
 }

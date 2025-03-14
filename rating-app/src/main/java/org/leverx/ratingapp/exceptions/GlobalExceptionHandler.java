@@ -1,5 +1,6 @@
 package org.leverx.ratingapp.exceptions;
 
+import io.jsonwebtoken.ExpiredJwtException;
 import org.leverx.ratingapp.dtos.error.ErrorResponseDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +24,15 @@ public class GlobalExceptionHandler {
         );
     }
 
+    @ExceptionHandler(ExpiredJwtException.class)
+    public ResponseEntity<ErrorResponseDTO> handleExpiredJwtException(ExpiredJwtException ex) {
+        return createErrorResponse(
+                "Your token is expired, please, login again",
+                "Expired JWT token",
+                HttpStatus.NOT_ACCEPTABLE);
+    }
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     public ResponseEntity<ErrorResponseDTO> handleHttpRequestMethodNotSupportedException
             (HttpRequestMethodNotSupportedException ex) {
         return createErrorResponse(ex.getMessage(), ex.getLocalizedMessage(), HttpStatus.METHOD_NOT_ALLOWED);
