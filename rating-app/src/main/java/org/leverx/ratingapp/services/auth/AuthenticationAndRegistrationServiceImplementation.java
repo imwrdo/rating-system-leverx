@@ -35,7 +35,6 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class AuthenticationAndRegistrationServiceImplementation implements AuthenticationAndRegistrationService {
     private final EmailValidatorService emailValidatorService;
     private final ConfirmationTokenService confirmationTokenService;
@@ -55,6 +54,7 @@ public class AuthenticationAndRegistrationServiceImplementation implements Authe
                 .orElseThrow(() -> new UnauthorizedException("User not authenticated"));
     }
 
+    @Transactional
     @Override
     public <T> void authorizeUser(T entity, User currentUser) {
         User entityAuthor = null;
@@ -67,7 +67,7 @@ public class AuthenticationAndRegistrationServiceImplementation implements Authe
             throw new ForbiddenException("You do not have permission to modify this resource");
         }
     }
-
+    @Transactional
     @Override
     public AuthenticationResponseDTO register(RegistrationRequestDTO registrationRequestDTO) {
         boolean isValidEmail = emailValidatorService.test(registrationRequestDTO.email());
@@ -103,6 +103,7 @@ public class AuthenticationAndRegistrationServiceImplementation implements Authe
                 .build();
     }
 
+    @Transactional
     @Override
     public AuthenticationResponseDTO authenticate(AuthenticationRequestDTO request) {
         authenticationManager.authenticate(
@@ -128,6 +129,7 @@ public class AuthenticationAndRegistrationServiceImplementation implements Authe
                 .build();
     }
 
+    @Transactional
     @Override
     public String confirmEmail(String token) {
         var userEmail = jwtService.extractUsername(token);
@@ -150,6 +152,7 @@ public class AuthenticationAndRegistrationServiceImplementation implements Authe
         return "Email confirmed. Waiting for admin approval.";
     }
 
+    @Transactional
     @Override
     public String confirmUser(String email, Boolean confirm) {
         if (email == null) {
@@ -173,7 +176,7 @@ public class AuthenticationAndRegistrationServiceImplementation implements Authe
         confirmationTokenService.removeConfirmationToken(email);
         return "User approved and activated";
     }
-
+    @Transactional
     @Override
     public AuthenticationResponseDTO initiatePasswordReset(String email) {
         User user = userRepository.findByEmail(email)
@@ -189,6 +192,7 @@ public class AuthenticationAndRegistrationServiceImplementation implements Authe
                 .build();
     }
 
+    @Transactional
     @Override
     public AuthenticationResponseDTO resetPassword(PasswordResetRequestDTO request) {
         String storedCode = confirmationTokenService.getResetCode(request.email());

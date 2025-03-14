@@ -7,6 +7,7 @@ import org.leverx.ratingapp.dtos.comments.CommentResponseDTO;
 import org.leverx.ratingapp.entities.Comment;
 import org.leverx.ratingapp.entities.User;
 import org.leverx.ratingapp.exceptions.ResourceNotFoundException;
+import org.leverx.ratingapp.exceptions.UnauthorizedException;
 import org.leverx.ratingapp.repositories.CommentRepository;
 import org.leverx.ratingapp.repositories.UserRepository;
 import org.leverx.ratingapp.services.auth.AuthenticationAndRegistrationService;
@@ -18,16 +19,22 @@ import java.util.stream.Stream;
 
 @Service
 @AllArgsConstructor
-@Transactional
 public class CommentServiceImplementation implements CommentService {
     private CommentRepository commentRepository;
     private AuthenticationAndRegistrationService authAndRegService;
     private UserRepository userRepository;
 
+    @Transactional
     @Override
     public CommentResponseDTO create(Long sellerId, CommentRequestDTO commentObject) {
 
-        User currentUser = authAndRegService.getCurrentUser();
+        User currentUser;
+        try {
+            currentUser = authAndRegService.getCurrentUser();
+        } catch (UnauthorizedException e) {
+            currentUser = null;
+        }
+
 
         User seller = userRepository.findActiveUserById(sellerId)
                 .orElseThrow(() ->
@@ -43,16 +50,23 @@ public class CommentServiceImplementation implements CommentService {
         return CommentResponseDTO.builder()
                 .id(comment.getId())
                 .message(comment.getMessage())
-                .author(comment.getAuthor().getEmail())
+                .author(null)
                 .seller(comment.getSeller().getEmail())
                 .status("Comment is created, please wait for verification")
                 .build();
     }
 
+
     @Override
     public List<CommentResponseDTO> getAllBySellerId(Long sellerId, Boolean isAdmin) {
+        User currentUser;
+        try{
+            currentUser = authAndRegService.getCurrentUser();
+        }catch(UnauthorizedException e){
+            System.out.println("Found an unauthorized user");
+            currentUser = null;
+        }
 
-        User currentUser = authAndRegService.getCurrentUser();
 
         boolean isSellerExists = isAdmin
                 ? userRepository.existsById(sellerId)
@@ -62,15 +76,28 @@ public class CommentServiceImplementation implements CommentService {
             throw new ResourceNotFoundException(String.format("Seller with id %d not found", sellerId));
         }
 
-        List<Comment> comments = isAdmin
-                ? commentRepository.findAllBySellerId(sellerId)
-                : Stream.concat(
-                        commentRepository.findAllAcceptedBySellerId(sellerId).stream(),
-                        commentRepository.findAllBySellerId(sellerId).stream()
-                                .filter(comment -> comment.getAuthor().getEmail().equals(currentUser.getEmail()))
-                )
-                .distinct()
-                .toList();
+        List<Comment> comments;
+
+        if (isAdmin) {
+            // Admins can view all comments regardless of status or author
+            comments = commentRepository.findAllBySellerId(sellerId);
+        } else {
+            if (currentUser != null) {
+                String currentUserEmail = currentUser.getEmail();
+                // Authenticated user can see both accepted comments and their own
+                comments = Stream.concat(
+                                commentRepository.findAllAcceptedBySellerId(sellerId).stream(),
+                                commentRepository.findAllBySellerId(sellerId).stream()
+                                        .filter(comment -> comment.getAuthor().getEmail().equals(currentUserEmail))
+                        )
+                        .distinct()
+                        .toList();
+            } else {
+                // Anonymous users can only see accepted comments
+                comments = commentRepository.findAllAcceptedBySellerId(sellerId);
+            }
+        }
+
 
         return CommentResponseDTO.mapToCommentResponseDTO(comments);
     }
@@ -94,6 +121,7 @@ public class CommentServiceImplementation implements CommentService {
                 .build();
     }
 
+    @Transactional
     @Override
     public String delete(Long sellerId, Long commentId) {
         userRepository.findById(sellerId)
@@ -115,7 +143,7 @@ public class CommentServiceImplementation implements CommentService {
         return "Your comment is deleted successfully";
     }
 
-
+    @Transactional
     @Override
     public CommentResponseDTO update(Long sellerId, Long commentId, CommentRequestDTO commentObject) {
 
@@ -145,6 +173,7 @@ public class CommentServiceImplementation implements CommentService {
                 .build();
     }
 
+    @Transactional
     @Override
     public CommentResponseDTO approveComment(Long sellerId, Long commentId,Boolean confirm) {
         // Ensure seller exists

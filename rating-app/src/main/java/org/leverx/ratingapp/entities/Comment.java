@@ -24,8 +24,7 @@ public class Comment {
     @ManyToOne
     @JoinColumn(
             name = "author_id",
-            referencedColumnName = "id",
-            nullable = false
+            referencedColumnName = "id"
     )
     private User author;
 

@@ -30,15 +30,15 @@ public class GameObjectController {
         return ResponseEntity.ok(service.getAll());
     }
 
-    @PutMapping(path = "{id}")
-    public ResponseEntity<GameObjectResponseDTO> update(@PathVariable Long id,
+    @PutMapping(path = "{game_object_id}")
+    public ResponseEntity<GameObjectResponseDTO> update(@PathVariable Long game_object_id,
                                              @RequestBody GameObjectRequestDTO gameObject) {
-        return ResponseEntity.ok(service.update(id,gameObject));
+        return ResponseEntity.ok(service.update(game_object_id,gameObject));
     }
 
-    @DeleteMapping("{id}")
-    public ResponseEntity<String> delete(@PathVariable Long id) {
+    @DeleteMapping("{game_object_id}")
+    public ResponseEntity<String> delete(@PathVariable Long game_object_id) {
 
-        return ResponseEntity.status(202).body(service.delete(id));
+        return ResponseEntity.status(202).body(service.delete(game_object_id));
     }
 }
