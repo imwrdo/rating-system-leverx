@@ -1,5 +1,6 @@
 package org.leverx.ratingapp.config.security;
 
+import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -11,26 +12,37 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+/**
+ * Configuration class for Spring Security settings.
+ * Defines security filters, authentication mechanisms, and access control rules.
+ */
 @Configuration
 @EnableWebSecurity
+@AllArgsConstructor
 public class WebSecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final AuthenticationProvider authenticationProvider;
 
-    public WebSecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter
-            ,AuthenticationProvider authenticationProvider) {
-        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
-        this.authenticationProvider = authenticationProvider;
-    }
-
+    /**
+     * Configures security settings, including authentication, session management,
+     * and access control rules.
+     *
+     * @param httpSecurity The HTTP security configuration.
+     * @return The configured {@link SecurityFilterChain}.
+     * @throws Exception If an error occurs during configuration.
+     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         return httpSecurity
+                // Disable CSRF protection since we are using stateless authentication (JWT)
                 .csrf(AbstractHttpConfigurer::disable)
+                // Configure session management to be stateless (no session storage)
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                // Configure exception handling for unauthorized access
                 .exceptionHandling(handling -> handling
                         .authenticationEntryPoint(new CustomAuthenticationEntryPoint()))
+                // Define access control rules
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers(HttpMethod.GET,"/users/*/comments").permitAll()
@@ -38,7 +50,9 @@ public class WebSecurityConfig {
                         .requestMatchers(HttpMethod.POST,"/users/*/comments/optional-seller").permitAll()
                         .anyRequest().authenticated()
                 )
+                // Set the authentication provider
                 .authenticationProvider(authenticationProvider)
+                // Add JWT filter before Spring Security's default authentication filter
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }

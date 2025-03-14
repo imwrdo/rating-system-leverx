@@ -10,13 +10,22 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+/**
+ * Configuration class responsible for initializing the admin user during application startup.
+ */
 @Configuration
 @RequiredArgsConstructor
 public class AdminInitializationConfig {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-
+    /**
+     * Creates an admin user if one does not already exist.
+     *
+     * @param adminEmail    The email of the admin user, injected from application properties.
+     * @param adminPassword The password of the admin user, injected from application properties.
+     * @return A CommandLineRunner that initializes the admin user upon application startup.
+     */
     @Bean
     public CommandLineRunner initializeAdmin(
             @Value("${admin.email}") String adminEmail,
