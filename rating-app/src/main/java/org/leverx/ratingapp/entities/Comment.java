@@ -42,6 +42,9 @@ public class Comment {
     @Column(name= "is_approved", nullable = false)
     private Boolean isApproved;
 
+    @Column(name = "grade", nullable = false)
+    private Integer grade;
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();

@@ -49,7 +49,7 @@ public class CommentController {
                     request.email()
             );
             // Register user first
-            authAndRegService.registerWithPendingComment(registrationRequest, seller_id, request.message());
+            authAndRegService.registerWithPendingComment(registrationRequest, seller_id, request.message(),request.grade());
             
             // Return temporary response
             response = CommentResponseDTO.builder()
@@ -57,7 +57,7 @@ public class CommentController {
                     .status("Comment pending - awaiting account activation")
                     .build();
         } else {
-            response = commentService.create(seller_id, new CommentRequestDTO(request.message()));
+            response = commentService.create(seller_id, new CommentRequestDTO(request.message(),request.grade()));
         }
 
         return ResponseEntity.created(

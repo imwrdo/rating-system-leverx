@@ -88,12 +88,12 @@ public class AuthenticationAndRegistrationServiceImplementation implements Authe
     }
 
     @Override
-    public AuthenticationResponseDTO registerWithPendingComment(RegistrationRequestDTO registrationRequestDTO, Long sellerId, String comment) {
+    public AuthenticationResponseDTO registerWithPendingComment(RegistrationRequestDTO registrationRequestDTO, Long sellerId, String comment, Integer grade) {
         // Register user
         AuthenticationResponseDTO response = register(registrationRequestDTO);
         
         // Store pending comment
-        pendingCommentService.savePendingComment(registrationRequestDTO.email(), sellerId, comment);
+        pendingCommentService.savePendingComment(registrationRequestDTO.email(), sellerId, comment, grade);
         
         return response;
     }

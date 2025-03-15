@@ -11,6 +11,7 @@ import org.leverx.ratingapp.exceptions.ResourceNotFoundException;
 import org.leverx.ratingapp.repositories.CommentRepository;
 import org.leverx.ratingapp.repositories.GameObjectRepository;
 import org.leverx.ratingapp.repositories.UserRepository;
+import org.leverx.ratingapp.services.rating.RatingCalculationService;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -25,10 +26,10 @@ import java.util.stream.Collectors;
 @Transactional
 @AllArgsConstructor
 public class UserServiceImplementation implements UserDetailsService, UserService {
-    private UserRepository userRepository;
-    private CommentRepository commentRepository;
-    private GameObjectRepository gameObjectRepository;
-
+    private final UserRepository userRepository;
+    private final CommentRepository commentRepository;
+    private final GameObjectRepository gameObjectRepository;
+    private final RatingCalculationService ratingCalculationService;
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
@@ -49,7 +50,17 @@ public class UserServiceImplementation implements UserDetailsService, UserServic
         List<User> users = onlyActive
                 ? userRepository.findAllActiveUsers()
                 : userRepository.findAll();
-        return mapToUsersDTO(users, isAdmin);
+                
+        List<Comment> comments = commentRepository.findAll();
+        List<GameObject> gameObjects = gameObjectRepository.findAll();
+
+        return users.stream()
+            .map(user -> {
+                Double rating = ratingCalculationService.getSellerRating(user.getId());
+                Integer totalRatings = ratingCalculationService.getNumberOfRatings(user.getId());
+                return UserDTO.mapToUserDTO(user, comments, gameObjects, isAdmin, rating, totalRatings);
+            })
+            .collect(Collectors.toList());
     }
 
     @Override
@@ -63,11 +74,20 @@ public class UserServiceImplementation implements UserDetailsService, UserServic
                     .orElseThrow(() ->
                             new ResourceNotFoundException("Active user with id %s not found"
                                     .formatted(user_id)));
+                                    
+        List<Comment> comments = commentRepository.findAll();
+        List<GameObject> gameObjects = gameObjectRepository.findAll();
+        
+        Double rating = ratingCalculationService.getSellerRating(user_id);
+        Integer totalRatings = ratingCalculationService.getNumberOfRatings(user_id);
+        
         return UserDTO.mapToUserDTO(
                 user,
-                commentRepository.findAll(),
-                gameObjectRepository.findAll(),
-                !onlyActive
+                comments,
+                gameObjects,
+                !onlyActive,
+                rating,
+                totalRatings
         );
     }
 
@@ -103,17 +123,32 @@ public class UserServiceImplementation implements UserDetailsService, UserServic
                 .filter(Comment::getIsApproved)
                 .toList();
 
-        Map<Long, Long> userCommentCount = comments.stream()
-                .collect(Collectors.groupingBy(comment ->
-                                comment.getSeller().getId(),
-                        Collectors.counting()));
+        Map<Long, Double> userRatings = users.stream()
+                .collect(Collectors.toMap(
+                    User::getId,
+                    user -> ratingCalculationService.getSellerRating(user.getId())
+                ));
 
+        Map<Long, Integer> userTotalRatings = users.stream()
+                .collect(Collectors.toMap(
+                    User::getId,
+                    user -> ratingCalculationService.getNumberOfRatings(user.getId())
+                ));
 
         return users.stream()
-                .sorted((u1, u2) -> Long.compare(
-                        userCommentCount.getOrDefault(u2.getId(), 0L),
-                        userCommentCount.getOrDefault(u1.getId(), 0L))
-                )
+                .sorted((u1, u2) -> {
+                    int ratingCompare = Double.compare(
+                            userRatings.getOrDefault(u2.getId(), 0.0),
+                            userRatings.getOrDefault(u1.getId(), 0.0)
+                    );
+                    if (ratingCompare != 0) {
+                        return ratingCompare;
+                    }
+                    return Integer.compare(
+                            userTotalRatings.getOrDefault(u2.getId(), 0),
+                            userTotalRatings.getOrDefault(u1.getId(), 0)
+                    );
+                })
                 .limit(ratingLimit != null && ratingLimit > 0 ? ratingLimit : Long.MAX_VALUE)
                 .map(user -> UserRankingDTO.builder()
                         .place((long) (users.indexOf(user) + 1))
@@ -122,7 +157,8 @@ public class UserServiceImplementation implements UserDetailsService, UserServic
                         .lastName(user.getLastName())
                         .email(user.getEmail())
                         .createdAt(user.getCreatedAt())
-                        .commentCount(userCommentCount.getOrDefault(user.getId(), 0L).intValue())
+                        .rating(userRatings.get(user.getId()))
+                        .totalCommentNumber(userTotalRatings.get(user.getId()))
                         .build()
                 )
                 .collect(Collectors.toList());

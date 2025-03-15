@@ -12,5 +12,6 @@ public record UserRankingDTO(
         String lastName,
         String email,
         LocalDateTime createdAt,
-        int commentCount
+        Double rating,
+        Integer totalCommentNumber
 ) {}

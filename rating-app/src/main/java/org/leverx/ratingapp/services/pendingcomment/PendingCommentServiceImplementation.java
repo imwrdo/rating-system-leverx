@@ -20,10 +20,11 @@ public class PendingCommentServiceImplementation implements PendingCommentServic
     private final ObjectMapper objectMapper;
 
     @Override
-    public void savePendingComment(String email, Long sellerId, String comment) {
+    public void savePendingComment(String email, Long sellerId, String comment,Integer grade) {
         PendingCommentDTO pendingComment = PendingCommentDTO.builder()
                 .sellerId(sellerId)
                 .message(comment)
+                .grade(grade)
                 .build();
         try {
             String commentJson = objectMapper.writeValueAsString(pendingComment);
@@ -39,7 +40,7 @@ public class PendingCommentServiceImplementation implements PendingCommentServic
         if (pendingCommentJson != null) {
             try {
                 PendingCommentDTO pendingComment = objectMapper.readValue(pendingCommentJson, PendingCommentDTO.class);
-                commentService.create(pendingComment.sellerId(), new CommentRequestDTO(pendingComment.message()));
+                commentService.create(pendingComment.sellerId(), new CommentRequestDTO(pendingComment.message(),pendingComment.grade()));
                 pendingCommentRepository.removePendingComment(email);
             } catch (JsonProcessingException e) {
                 throw new InvalidOperationException("Failed to process pending comment");

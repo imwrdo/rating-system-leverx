@@ -11,6 +11,7 @@ import org.leverx.ratingapp.exceptions.ResourceNotFoundException;
 import org.leverx.ratingapp.repositories.CommentRepository;
 import org.leverx.ratingapp.repositories.UserRepository;
 import org.leverx.ratingapp.services.auth.AuthorizationService;
+import org.leverx.ratingapp.services.rating.RatingCalculationService;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Stream;
@@ -22,6 +23,7 @@ public class CommentServiceImplementation implements CommentService {
     private final CommentRepository commentRepository;
     private final UserRepository userRepository;
     private final AuthorizationService authorizationService;
+    private final RatingCalculationService ratingCalculationService;
 
     @Transactional
     @Override
@@ -31,16 +33,25 @@ public class CommentServiceImplementation implements CommentService {
                 .orElseThrow(() -> new ResourceNotFoundException(String.format("Seller with id %d not found",
                         sellerId)));
 
+        if (commentObject.grade() < 1 || commentObject.grade() > 5) {
+            throw new IllegalArgumentException("Grade must be between 1 and 5");
+        }
+
         var comment = Comment.builder()
                 .message(commentObject.message())
+                .grade(commentObject.grade())
                 .author(currentUser)
                 .seller(seller)
                 .build();
 
         commentRepository.save(comment);
+        if (comment.getIsApproved()) {
+            ratingCalculationService.updateSellerRating(sellerId);
+        }
         return CommentResponseDTO.builder()
                 .id(comment.getId())
                 .message(comment.getMessage())
+                .grade(comment.getGrade())
                 .author(currentUser != null ? currentUser.getEmail() : null)
                 .seller(seller.getEmail())
                 .status(String.format("Comment is %s, please wait for verification",
@@ -119,6 +130,7 @@ public class CommentServiceImplementation implements CommentService {
         
         authorizationService.authorizeResourceModification(comment, currentUser);
         commentRepository.delete(comment);
+        ratingCalculationService.updateSellerRating(sellerId);
 
         return String.format("Comment %s is %s",
                 commentId,
@@ -171,8 +183,10 @@ public class CommentServiceImplementation implements CommentService {
         if (confirm) {
             comment.setIsApproved(true);
             commentRepository.save(comment);
+            ratingCalculationService.updateSellerRating(sellerId);
         } else {
             commentRepository.delete(comment);
+            ratingCalculationService.updateSellerRating(sellerId);
         }
 
         return CommentResponseDTO.builder()
@@ -184,6 +198,7 @@ public class CommentServiceImplementation implements CommentService {
                         ? Status.APPROVED.getValueOfStatus()
                         : Status.DELETED.getValueOfStatus()
                 )
+                .grade(comment.getGrade())
                 .build();
     }
 

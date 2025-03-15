@@ -19,11 +19,13 @@ public record UserDTO(
         String email,
         LocalDateTime createdAt,
         Role role,
+        Double rating,
+        Integer totalRatings,
         List<CommentResponseDTO> comments,
         List<GameObjectResponseDTO> gameObjects) {
 
 
-    public static UserDTO mapToUserDTO(User user, List<Comment> comments, List<GameObject> gameObjects,Boolean isAdmin) {
+    public static UserDTO mapToUserDTO(User user, List<Comment> comments, List<GameObject> gameObjects, Boolean isAdmin, Double rating, Integer totalRatings) {
         List<Comment> userComments = comments.stream()
                 .filter(comment ->isAdmin
                         ? comment.getSeller().getId()
@@ -42,18 +44,23 @@ public record UserDTO(
                 .email(user.getEmail())
                 .createdAt(user.getCreatedAt())
                 .role(user.getRole())
+                .rating(rating)
+                .totalRatings(totalRatings)
                 .comments(CommentResponseDTO.mapToCommentResponseDTO(userComments))
                 .gameObjects(GameObjectResponseDTO.mapToGameObjectResponseDTO(userGameObjects))
                 .build();
     }
 
-    public static List<UserDTO> mapToUsersDTO(List<User> users, List<Comment> comments, List<GameObject> gameObjects,Boolean isAdmin) {
+    public static List<UserDTO> mapToUsersDTO(List<User> users, List<Comment> comments, List<GameObject> gameObjects, Boolean isAdmin) {
         return users.stream()
                 .map(user -> mapToUserDTO(
                         user,
                         comments,
                         gameObjects,
-                        isAdmin))
+                        isAdmin,
+                        0.0,  // The rating will be set by service layer
+                        0     // The total ratings will be set by service layer
+                ))
                 .collect(Collectors.toList());
     }
 

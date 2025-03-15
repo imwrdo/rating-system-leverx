@@ -16,5 +16,5 @@ public interface AuthenticationAndRegistrationService {
      AuthenticationResponseDTO resetPassword(PasswordResetRequestDTO request);
      AuthenticationResponseDTO verifyResetCode(String email, String code);
      String confirmUser(String email, Boolean confirm);
-     AuthenticationResponseDTO registerWithPendingComment(RegistrationRequestDTO registrationRequestDTO, Long sellerId, String comment);
+     AuthenticationResponseDTO registerWithPendingComment(RegistrationRequestDTO registrationRequestDTO, Long sellerId, String comment,Integer grade);
 }
