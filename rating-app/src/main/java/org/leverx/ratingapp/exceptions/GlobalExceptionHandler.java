@@ -2,6 +2,7 @@ package org.leverx.ratingapp.exceptions;
 
 import io.jsonwebtoken.ExpiredJwtException;
 import org.leverx.ratingapp.dtos.error.ErrorResponseDTO;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -31,6 +32,27 @@ public class GlobalExceptionHandler {
                 "Expired JWT token",
                 HttpStatus.NOT_ACCEPTABLE);
     }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ErrorResponseDTO> handleDataIntegrityViolationException(DataIntegrityViolationException ex) {
+        return createErrorResponse("Please check that you have entered all the required data",
+                "Not all data provided",
+                HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ErrorResponseDTO> handleIllegalArgumentExceptionException(IllegalArgumentException ex) {
+        return createErrorResponse("Please check provided data",
+                "Bad request",
+                HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(ConflictException.class)
+    public ResponseEntity<ErrorResponseDTO> handleConflictException
+            (ConflictException ex) {
+        return createErrorResponse(ex.getMessage(), ex.getLocalizedMessage(), HttpStatus.CONFLICT);
+    }
+
 
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     public ResponseEntity<ErrorResponseDTO> handleHttpRequestMethodNotSupportedException

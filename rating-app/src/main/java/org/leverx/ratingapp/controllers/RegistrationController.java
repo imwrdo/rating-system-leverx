@@ -22,7 +22,7 @@ public class RegistrationController {
     }
 
     @GetMapping(path = "confirm")
-    public ResponseEntity<String> confirm(@RequestParam("token") String token){
+    public ResponseEntity<String> confirmEmail(@RequestParam("token") String token){
         return ResponseEntity.ok(service.confirmEmail(token));
     }
 

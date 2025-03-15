@@ -35,7 +35,7 @@ public class User implements UserDetails {
     @Column(name= "is_activated", nullable = false)
     private Boolean isActivated;
 
-    @Column(name= "email_confirmed", nullable = false)
+    @Column(name= "is_email_confirmed", nullable = false)
     private Boolean isEmailConfirmed;
 
     @Column(name="password", nullable = false)

@@ -9,6 +9,7 @@ import org.leverx.ratingapp.dtos.auth.registration.RegistrationRequestDTO;
 import org.leverx.ratingapp.entities.User;
 import org.leverx.ratingapp.enums.Status;
 import org.leverx.ratingapp.exceptions.AccountNotActivatedException;
+import org.leverx.ratingapp.exceptions.ConflictException;
 import org.leverx.ratingapp.exceptions.ResourceNotFoundException;
 import org.leverx.ratingapp.repositories.UserRepository;
 import org.leverx.ratingapp.services.auth.jwt.JwtService;
@@ -60,7 +61,7 @@ public class AuthenticationAndRegistrationServiceImplementation implements Authe
         }
         
         if (userRepository.existsByEmail(registrationRequestDTO.email())) {
-            throw new InvalidOperationException("Email already registered");
+            throw new ConflictException("Email already registered");
         }
 
         var user = User.builder()
@@ -83,7 +84,7 @@ public class AuthenticationAndRegistrationServiceImplementation implements Authe
         return AuthenticationResponseDTO.builder()
                 .user(registrationRequestDTO.email())
                 .token(jwtToken)
-                .Status(Status.PENDING.getValueOfStatus())
+                .status(Status.PENDING.getValueOfStatus())
                 .build();
     }
 
@@ -120,7 +121,7 @@ public class AuthenticationAndRegistrationServiceImplementation implements Authe
                 .builder()
                 .user(request.email())
                 .token(jwtToken)
-                .Status(Status.AUTHENTICATED.getValueOfStatus())
+                .status(Status.AUTHENTICATED.getValueOfStatus())
                 .build();
     }
 
@@ -189,7 +190,7 @@ public class AuthenticationAndRegistrationServiceImplementation implements Authe
 
         return AuthenticationResponseDTO.builder()
                 .user(email)
-                .Status(Status.SENT.getValueOfStatus())
+                .status(Status.SENT.getValueOfStatus())
                 .build();
     }
 
@@ -210,7 +211,7 @@ public class AuthenticationAndRegistrationServiceImplementation implements Authe
 
         return AuthenticationResponseDTO.builder()
                 .user(request.email())
-                .Status("Password successfully reset")
+                .status("Password successfully reset")
                 .build();
     }
 
@@ -221,7 +222,7 @@ public class AuthenticationAndRegistrationServiceImplementation implements Authe
 
         return AuthenticationResponseDTO.builder()
                 .user(email)
-                .Status(isValid ? "Valid reset code" : "Invalid reset code")
+                .status(isValid ? "Valid reset code" : "Invalid reset code")
                 .build();
     }
 

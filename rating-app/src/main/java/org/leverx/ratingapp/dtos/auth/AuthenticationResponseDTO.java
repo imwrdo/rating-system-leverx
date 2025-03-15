@@ -6,5 +6,5 @@ import lombok.Builder;
 public record AuthenticationResponseDTO(
         String user,
         String token,
-        String Status)
+        String status)
 {}

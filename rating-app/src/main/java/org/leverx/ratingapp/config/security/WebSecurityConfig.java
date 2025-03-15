@@ -1,6 +1,7 @@
 package org.leverx.ratingapp.config.security;
 
 import lombok.AllArgsConstructor;
+import org.leverx.ratingapp.enums.Role;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -48,6 +49,7 @@ public class WebSecurityConfig {
                         .requestMatchers(HttpMethod.GET,"/users/*/comments").permitAll()
                         .requestMatchers(HttpMethod.POST,"/users/*/comments").permitAll()
                         .requestMatchers(HttpMethod.POST,"/users/*/comments/optional-seller").permitAll()
+                        .requestMatchers("/admin/**").hasAuthority(Role.ADMIN.getValueOfRole())
                         .anyRequest().authenticated()
                 )
                 // Set the authentication provider
