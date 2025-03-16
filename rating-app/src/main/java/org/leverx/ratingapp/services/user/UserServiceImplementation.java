@@ -11,7 +11,7 @@ import org.leverx.ratingapp.exceptions.ResourceNotFoundException;
 import org.leverx.ratingapp.repositories.CommentRepository;
 import org.leverx.ratingapp.repositories.GameObjectRepository;
 import org.leverx.ratingapp.repositories.UserRepository;
-import org.leverx.ratingapp.services.rating.RatingCalculationService;
+import org.leverx.ratingapp.services.rating.RatingCalculationServiceImplementation;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -29,7 +29,7 @@ public class UserServiceImplementation implements UserDetailsService, UserServic
     private final UserRepository userRepository;
     private final CommentRepository commentRepository;
     private final GameObjectRepository gameObjectRepository;
-    private final RatingCalculationService ratingCalculationService;
+    private final RatingCalculationServiceImplementation ratingCalculationServiceImplementation;
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
@@ -56,8 +56,8 @@ public class UserServiceImplementation implements UserDetailsService, UserServic
 
         return users.stream()
             .map(user -> {
-                Double rating = ratingCalculationService.getSellerRating(user.getId());
-                Integer totalRatings = ratingCalculationService.getNumberOfRatings(user.getId());
+                Double rating = ratingCalculationServiceImplementation.getSellerRating(user.getId());
+                Integer totalRatings = ratingCalculationServiceImplementation.getNumberOfRatings(user.getId());
                 return UserDTO.mapToUserDTO(user, comments, gameObjects, isAdmin, rating, totalRatings);
             })
             .collect(Collectors.toList());
@@ -78,8 +78,8 @@ public class UserServiceImplementation implements UserDetailsService, UserServic
         List<Comment> comments = commentRepository.findAll();
         List<GameObject> gameObjects = gameObjectRepository.findAll();
         
-        Double rating = ratingCalculationService.getSellerRating(user_id);
-        Integer totalRatings = ratingCalculationService.getNumberOfRatings(user_id);
+        Double rating = ratingCalculationServiceImplementation.getSellerRating(user_id);
+        Integer totalRatings = ratingCalculationServiceImplementation.getNumberOfRatings(user_id);
         
         return UserDTO.mapToUserDTO(
                 user,
@@ -126,13 +126,13 @@ public class UserServiceImplementation implements UserDetailsService, UserServic
         Map<Long, Double> userRatings = users.stream()
                 .collect(Collectors.toMap(
                     User::getId,
-                    user -> ratingCalculationService.getSellerRating(user.getId())
+                    user -> ratingCalculationServiceImplementation.getSellerRating(user.getId())
                 ));
 
         Map<Long, Integer> userTotalRatings = users.stream()
                 .collect(Collectors.toMap(
                     User::getId,
-                    user -> ratingCalculationService.getNumberOfRatings(user.getId())
+                    user -> ratingCalculationServiceImplementation.getNumberOfRatings(user.getId())
                 ));
 
         return users.stream()

@@ -40,7 +40,8 @@ public class Comment {
     private LocalDateTime createdAt;
 
     @Column(name= "is_approved", nullable = false)
-    private Boolean isApproved;
+    @Builder.Default
+    private Boolean isApproved = false;
 
     @Column(name = "grade", nullable = false)
     private Integer grade;
@@ -48,6 +49,5 @@ public class Comment {
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
-        isApproved = false;
     }
 }

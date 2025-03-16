@@ -1,4 +1,4 @@
-package org.leverx.ratingapp.comment;
+package org.leverx.ratingapp.integration;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -20,7 +20,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
-
 import java.time.LocalDateTime;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -58,7 +57,7 @@ public class CommentControllerIntegrationTest {
      */
     @BeforeEach
     void setUp() throws Exception {
-        // Create and save a seller account in the database
+        // Step 1. Create and save a seller account in the database
         User seller = User.builder()
                 .email(sellerEmail)
                 .password(passwordEncoder.encode(userPassword))
@@ -71,7 +70,7 @@ public class CommentControllerIntegrationTest {
                 .build();
         sellerId = userRepository.save(seller).getId();
 
-        // Create and save a second seller account in the database
+        // Step 2. Create and save a second seller account in the database
         User user = User.builder()
                 .email(userEmail)
                 .password(passwordEncoder.encode(userPassword))
@@ -84,7 +83,7 @@ public class CommentControllerIntegrationTest {
                 .build();
         userRepository.save(user);
 
-        // Authenticate both user and admin to obtain JWT tokens
+        // Step 3. Authenticate both user and admin to obtain JWT tokens
         userToken = getAuthToken(userEmail, userPassword);
         adminToken = getAuthToken(adminEmail, adminPassword);
     }

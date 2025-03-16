@@ -10,12 +10,12 @@ import java.util.stream.Collectors;
 @Builder
 public record CommentResponseDTO(Long id, String message, String author, String seller, String status, Integer grade) {
 
-    public static List<CommentResponseDTO> mapToCommentResponseDTO(List<Comment> comments){
+    public static List<CommentResponseDTO> mapToCommentResponseDTO(List<Comment> comments) {
         return comments.stream()
                 .map(comment -> CommentResponseDTO.builder()
                         .id(comment.getId())
                         .message(comment.getMessage())
-                        .author(comment.getAuthor().getEmail())
+                        .author(comment.getAuthor() != null ? comment.getAuthor().getEmail() : "Anonymous")
                         .seller(comment.getSeller().getEmail())
                         .grade(comment.getGrade())
                         .status(comment.getIsApproved()

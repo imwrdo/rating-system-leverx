@@ -11,7 +11,7 @@ import org.leverx.ratingapp.exceptions.ResourceNotFoundException;
 import org.leverx.ratingapp.repositories.CommentRepository;
 import org.leverx.ratingapp.repositories.UserRepository;
 import org.leverx.ratingapp.services.auth.AuthorizationService;
-import org.leverx.ratingapp.services.rating.RatingCalculationService;
+import org.leverx.ratingapp.services.rating.RatingCalculationServiceImplementation;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Stream;
@@ -23,7 +23,7 @@ public class CommentServiceImplementation implements CommentService {
     private final CommentRepository commentRepository;
     private final UserRepository userRepository;
     private final AuthorizationService authorizationService;
-    private final RatingCalculationService ratingCalculationService;
+    private final RatingCalculationServiceImplementation ratingCalculationServiceImplementation;
 
     @Transactional
     @Override
@@ -46,7 +46,7 @@ public class CommentServiceImplementation implements CommentService {
 
         commentRepository.save(comment);
         if (comment.getIsApproved()) {
-            ratingCalculationService.updateSellerRating(sellerId);
+            ratingCalculationServiceImplementation.updateSellerRating(sellerId);
         }
         return CommentResponseDTO.builder()
                 .id(comment.getId())
@@ -130,7 +130,7 @@ public class CommentServiceImplementation implements CommentService {
         
         authorizationService.authorizeResourceModification(comment, currentUser);
         commentRepository.delete(comment);
-        ratingCalculationService.updateSellerRating(sellerId);
+        ratingCalculationServiceImplementation.updateSellerRating(sellerId);
 
         return String.format("Comment %s is %s",
                 commentId,
@@ -185,10 +185,10 @@ public class CommentServiceImplementation implements CommentService {
         if (confirm) {
             comment.setIsApproved(true);
             commentRepository.save(comment);
-            ratingCalculationService.updateSellerRating(sellerId);
+            ratingCalculationServiceImplementation.updateSellerRating(sellerId);
         } else {
             commentRepository.delete(comment);
-            ratingCalculationService.updateSellerRating(sellerId);
+            ratingCalculationServiceImplementation.updateSellerRating(sellerId);
         }
 
         return CommentResponseDTO.builder()

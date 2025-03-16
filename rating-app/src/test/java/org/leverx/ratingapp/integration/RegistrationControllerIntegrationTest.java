@@ -1,4 +1,4 @@
-package org.leverx.ratingapp.register;
+package org.leverx.ratingapp.integration;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -8,13 +8,21 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.leverx.ratingapp.dtos.auth.AuthenticationRequestDTO;
 import org.leverx.ratingapp.dtos.auth.registration.RegistrationRequestDTO;
+import org.leverx.ratingapp.entities.User;
+import org.leverx.ratingapp.enums.Role;
 import org.leverx.ratingapp.enums.Status;
+import org.leverx.ratingapp.repositories.UserRepository;
+import org.leverx.ratingapp.services.email.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+
+import java.time.LocalDateTime;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -31,10 +39,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Tag("integration")
 public class RegistrationControllerIntegrationTest {
 
-    @Autowired
-    private MockMvc mockMvc;
-    @Autowired
-    private ObjectMapper objectMapper;
+    @Autowired private MockMvc mockMvc;
+    @Autowired private ObjectMapper objectMapper;
+    @Autowired private UserRepository userRepository;
+    @Autowired private PasswordEncoder passwordEncoder;
+
+    @MockitoBean private EmailService emailService;
 
     @Value("${admin.email}") private String adminEmail;
     @Value("${admin.password}") private String adminPassword;
@@ -63,6 +73,61 @@ public class RegistrationControllerIntegrationTest {
                 .andExpect(status().isUnauthorized());
 
     }
+
+    /**
+     * Tests that a regular user is denied access to admin panel endpoints.
+     * Expected behavior:
+     * - A seller (regular user) is registered and authenticated.
+     * - The user attempts to access admin-only endpoints.
+     * - All requests should return HTTP 403 Forbidden.
+     */
+    @Test
+    @DisplayName("Check user access to admin panel")
+    void testUserAccessToAdminPanelEndpointFail() throws Exception {
+        // Step 1. Create and save a seller account in the database
+        User seller = User.builder()
+                .email(userEmail)
+                .password(passwordEncoder.encode(userPassword))
+                .firstName("Test")
+                .lastName("Seller")
+                .role(Role.SELLER)
+                .isEmailConfirmed(true)
+                .isActivated(true)
+                .createdAt(LocalDateTime.now())
+                .build();
+        userRepository.save(seller);
+        // Step 2: Authenticate as a regular user and obtain JWT token
+        AuthenticationRequestDTO authRequest = AuthenticationRequestDTO.builder()
+                .email(userEmail)
+                .password(userPassword)
+                .build();
+
+        String response = mockMvc.perform(post("/auth/authenticate")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(authRequest)))
+                .andExpect(status().isAccepted())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        String token = objectMapper.readTree(response).get("token").asText();
+
+        // Step 3: Attempt to access admin-only endpoints with a regular user token
+        // Expect all responses to be HTTP 403 Forbidden
+        mockMvc.perform(get("/admin/users/pending")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isForbidden());
+
+        mockMvc.perform(get("/admin/users")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isForbidden());
+
+        mockMvc.perform(get("/admin/users/1/comments")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isForbidden());
+    }
+
+
 
     /**
      * Tests successful user registration and subsequent confirmation.
