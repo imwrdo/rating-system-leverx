@@ -6,14 +6,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.leverx.ratingapp.dtos.comments.CommentRequestDTO;
 import org.leverx.ratingapp.dtos.comments.CommentResponseDTO;
-import org.leverx.ratingapp.entities.Comment;
-import org.leverx.ratingapp.entities.User;
-import org.leverx.ratingapp.enums.Status;
+import org.leverx.ratingapp.models.entities.Comment;
+import org.leverx.ratingapp.models.entities.User;
+import org.leverx.ratingapp.models.enums.Status;
 import org.leverx.ratingapp.exceptions.ForbiddenException;
 import org.leverx.ratingapp.exceptions.ResourceNotFoundException;
 import org.leverx.ratingapp.repositories.CommentRepository;
 import org.leverx.ratingapp.repositories.UserRepository;
-import org.leverx.ratingapp.services.auth.AuthorizationService;
+import org.leverx.ratingapp.services.auth.authorization.AuthorizationServiceImplementation;
 import org.leverx.ratingapp.services.comment.CommentServiceImplementation;
 import org.leverx.ratingapp.services.rating.RatingCalculationServiceImplementation;
 import org.mockito.InjectMocks;
@@ -39,7 +39,7 @@ class CommentServiceUnitTests {
 
     @Mock private CommentRepository commentRepository;
     @Mock private UserRepository userRepository;
-    @Mock private AuthorizationService authorizationService;
+    @Mock private AuthorizationServiceImplementation authorizationService;
     @Mock private RatingCalculationServiceImplementation ratingCalculationServiceImplementation;
 
 

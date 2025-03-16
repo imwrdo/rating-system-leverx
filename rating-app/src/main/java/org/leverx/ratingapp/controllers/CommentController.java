@@ -14,14 +14,26 @@ import org.springframework.web.bind.annotation.*;
 import java.net.URI;
 import java.util.List;
 
+/**
+ * CommentController is a REST controller that manages comment-related actions
+ * for a seller's profile. It allows creating, retrieving, updating, and deleting
+ * comments, as well as handling registration for users without existing accounts.
+ */
 @RestController
 @AllArgsConstructor
 @RequestMapping(path ="users/{seller_id}/comments")
 public class CommentController {
+    private final CommentService commentService; // Service for handling comment operations
+    private final AuthenticationAndRegistrationService authAndRegService; // Service for authentication and registration
+    private final UserRepository userRepository; // Repository for managing users
 
-    private final CommentService commentService;
-    private final AuthenticationAndRegistrationService authAndRegService;
-    private final UserRepository userRepository;
+    /**
+     * Endpoint to create a new comment for a specific seller.
+     *
+     * @param seller_id the seller's ID
+     * @param commentObject the details of the comment to create
+     * @return a ResponseEntity containing the created comment as a CommentResponseDTO object
+     */
     @PostMapping
     public ResponseEntity<CommentResponseDTO> create(
             @PathVariable Long seller_id,
@@ -33,6 +45,15 @@ public class CommentController {
         ).body(response);
     }
 
+    /**
+     * Endpoint to create a comment with an optional seller. If the seller does not exist,
+     * a user is registered first before the comment is created.
+     *
+     * @param seller_id the seller's ID
+     * @param request the request object containing comment details and user registration information
+     * @return a ResponseEntity containing the created comment or a temporary response
+     * if the user is pending registration
+     */
     @PostMapping(path="optional-seller")
     public ResponseEntity<CommentResponseDTO> createCommentWithOptionalSeller(
             @PathVariable Long seller_id,
@@ -41,6 +62,7 @@ public class CommentController {
         boolean sellerExists = userRepository.existsById(seller_id);
         CommentResponseDTO response;
 
+        // If seller doesn't exist, register the user first
         if (!sellerExists) {
             RegistrationRequestDTO registrationRequest = new RegistrationRequestDTO(
                     request.firstName(),
@@ -49,7 +71,11 @@ public class CommentController {
                     request.email()
             );
             // Register user first
-            authAndRegService.registerWithPendingComment(registrationRequest, seller_id, request.message(),request.grade());
+            authAndRegService.registerWithPendingComment(
+                    registrationRequest,
+                    seller_id,
+                    request.message(),
+                    request.grade());
             
             // Return temporary response
             response = CommentResponseDTO.builder()
@@ -65,6 +91,12 @@ public class CommentController {
         ).body(response);
     }
 
+    /**
+     * Endpoint to retrieve all accepted comments for a specific seller.
+     *
+     * @param seller_id the seller's ID
+     * @return a ResponseEntity containing a list of all accepted comments for the seller as CommentResponseDTO objects
+     */
     @GetMapping
     public ResponseEntity<List<CommentResponseDTO>> getAllAcceptedComments(
             @PathVariable Long seller_id){
@@ -72,6 +104,13 @@ public class CommentController {
         return ResponseEntity.ok(commentService.getAllBySellerId(seller_id,false));
     }
 
+    /**
+     * Endpoint to retrieve a specific comment by its ID for a specific seller.
+     *
+     * @param seller_id the seller's ID
+     * @param comment_id the ID of the comment to retrieve
+     * @return a ResponseEntity containing the requested comment as a CommentResponseDTO object
+     */
     @GetMapping(path ="{comment_id}")
     public ResponseEntity<CommentResponseDTO> getComment(
             @PathVariable Long seller_id,
@@ -79,6 +118,13 @@ public class CommentController {
         return ResponseEntity.ok(commentService.getComment(seller_id,comment_id,false));
     }
 
+    /**
+     * Endpoint to delete a comment by its ID for a specific seller.
+     *
+     * @param seller_id the seller's ID
+     * @param comment_id the ID of the comment to delete
+     * @return a ResponseEntity containing a status message after deletion
+     */
     @DeleteMapping(path = "{comment_id}")
     public ResponseEntity<String> delete(
             @PathVariable Long seller_id,
@@ -87,7 +133,14 @@ public class CommentController {
         return ResponseEntity.status(202).body(commentService.delete(seller_id,comment_id));
     }
 
-
+    /**
+     * Endpoint to update an existing comment by its ID for a specific seller.
+     *
+     * @param seller_id the seller's ID
+     * @param comment_id the ID of the comment to update
+     * @param commentObject the updated comment details
+     * @return a ResponseEntity containing the updated comment as a CommentResponseDTO object
+     */
     @PutMapping(path = "{comment_id}")
     public ResponseEntity<CommentResponseDTO> update(
             @PathVariable Long seller_id,

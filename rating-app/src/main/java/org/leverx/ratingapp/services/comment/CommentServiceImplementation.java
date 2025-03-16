@@ -4,27 +4,41 @@ import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.leverx.ratingapp.dtos.comments.CommentRequestDTO;
 import org.leverx.ratingapp.dtos.comments.CommentResponseDTO;
-import org.leverx.ratingapp.entities.Comment;
-import org.leverx.ratingapp.entities.User;
-import org.leverx.ratingapp.enums.Status;
+import org.leverx.ratingapp.models.entities.Comment;
+import org.leverx.ratingapp.models.entities.User;
+import org.leverx.ratingapp.models.enums.Status;
 import org.leverx.ratingapp.exceptions.ResourceNotFoundException;
 import org.leverx.ratingapp.repositories.CommentRepository;
 import org.leverx.ratingapp.repositories.UserRepository;
-import org.leverx.ratingapp.services.auth.AuthorizationService;
+import org.leverx.ratingapp.services.auth.authorization.AuthorizationServiceImplementation;
 import org.leverx.ratingapp.services.rating.RatingCalculationServiceImplementation;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Stream;
 
-
+/**
+ * Service implementation of {@link CommentService} for managing comments related to sellers.
+ * Handles the creation, retrieval, update, approval, and deletion of comments.
+ */
 @Service
 @AllArgsConstructor
 public class CommentServiceImplementation implements CommentService {
+    // Repositories for accessing comment and user data
     private final CommentRepository commentRepository;
     private final UserRepository userRepository;
-    private final AuthorizationService authorizationService;
+
+    // Services for authorization and rating calculation
+    private final AuthorizationServiceImplementation authorizationService;
     private final RatingCalculationServiceImplementation ratingCalculationServiceImplementation;
 
+    /**
+     * Creates a new comment for a seller.
+     * Ensures the grade is between 1 and 5. The comment is saved and seller's rating is updated if approved.
+     *
+     * @param sellerId The ID of the seller being reviewed.
+     * @param commentObject The comment details from the client.
+     * @return The created comment wrapped in a {@link CommentResponseDTO}.
+     */
     @Transactional
     @Override
     public CommentResponseDTO create(Long sellerId, CommentRequestDTO commentObject) {
@@ -33,10 +47,12 @@ public class CommentServiceImplementation implements CommentService {
                 .orElseThrow(() -> new ResourceNotFoundException(String.format("Seller with id %d not found",
                         sellerId)));
 
+        // Validate the grade range (1 to 5)
         if (commentObject.grade() < 1 || commentObject.grade() > 5) {
             throw new IllegalArgumentException("Grade must be between 1 and 5");
         }
 
+        // Build and save the comment
         var comment = Comment.builder()
                 .message(commentObject.message())
                 .grade(commentObject.grade())
@@ -45,9 +61,13 @@ public class CommentServiceImplementation implements CommentService {
                 .build();
 
         commentRepository.save(comment);
+
+        // Update seller's rating if the comment is approved
         if (comment.getIsApproved()) {
             ratingCalculationServiceImplementation.updateSellerRating(sellerId);
         }
+
+        // Return the comment wrapped in a DTO
         return CommentResponseDTO.builder()
                 .id(comment.getId())
                 .message(comment.getMessage())
@@ -59,6 +79,15 @@ public class CommentServiceImplementation implements CommentService {
                 .build();
     }
 
+    /**
+     * Retrieves all comments for a specific seller.
+     * Admins can view all comments; authenticated users can view their own comments and accepted ones;
+     * Anonymous users can only view accepted comments.
+     *
+     * @param sellerId The ID of the seller.
+     * @param isAdmin Boolean indicating if the request is made by an admin.
+     * @return A list of comment {@link CommentResponseDTO} for the seller.
+     */
     @Override
     public List<CommentResponseDTO> getAllBySellerId(Long sellerId, Boolean isAdmin) {
         User currentUser = authorizationService.getCurrentUser();
@@ -96,10 +125,18 @@ public class CommentServiceImplementation implements CommentService {
             }
         }
 
-
         return CommentResponseDTO.mapToCommentResponseDTO(comments);
     }
 
+    /**
+     * Retrieves a specific comment by its ID for a seller.
+     * Admins can view any comment; authenticated users can view their own approved or pending comments.
+     *
+     * @param sellerId The ID of the seller.
+     * @param commentId The ID of the comment.
+     * @param isAdmin Boolean indicating if the request is made by an admin.
+     * @return A {@link CommentResponseDTO} containing the comment details.
+     */
     @Override
     public CommentResponseDTO getComment(Long sellerId, Long commentId, Boolean isAdmin) {
         User currentUser = authorizationService.getCurrentUser();
@@ -122,12 +159,21 @@ public class CommentServiceImplementation implements CommentService {
                 .build();
     }
 
+    /**
+     * Deletes a comment and updates the seller's rating accordingly.
+     * Only authorized users (e.g., comment author or admin) can delete comments.
+     *
+     * @param sellerId The ID of the seller.
+     * @param commentId The ID of the comment.
+     * @return A status message indicating the deletion result.
+     */
     @Transactional
     @Override
     public String delete(Long sellerId, Long commentId) {
         User currentUser = authorizationService.getRequiredCurrentUser();
         Comment comment = getRequiredComment(sellerId, commentId);
-        
+
+        // Authorize modification before deleting the comment
         authorizationService.authorizeResourceModification(comment, currentUser);
         commentRepository.delete(comment);
         ratingCalculationServiceImplementation.updateSellerRating(sellerId);
@@ -137,6 +183,15 @@ public class CommentServiceImplementation implements CommentService {
                 Status.DELETED.getValueOfStatus());
     }
 
+    /**
+     * Updates an existing comment's message and grade.
+     * The comment can only be modified by its author or an admin.
+     *
+     * @param sellerId The ID of the seller.
+     * @param commentId The ID of the comment to update.
+     * @param commentObject The updated comment details.
+     * @return The updated comment wrapped in a response DTO.
+     */
     @Transactional
     @Override
     public CommentResponseDTO update(Long sellerId, Long commentId, CommentRequestDTO commentObject) {
@@ -169,6 +224,15 @@ public class CommentServiceImplementation implements CommentService {
                 .build();
     }
 
+    /**
+     * Approves or deletes a comment based on the given confirmation.
+     * The seller can approve or delete comments, and the seller's rating will be updated accordingly.
+     *
+     * @param sellerId The ID of the seller.
+     * @param commentId The ID of the comment.
+     * @param confirm Boolean flag to confirm approval or deletion.
+     * @return A {@link CommentResponseDTO} containing the status of the comment.
+     */
     @Transactional
     @Override
     public CommentResponseDTO approveComment(Long sellerId, Long commentId,Boolean confirm) {
@@ -204,12 +268,24 @@ public class CommentServiceImplementation implements CommentService {
                 .build();
     }
 
+    /**
+     * Retrieves all comments from the system.
+     *
+     * @return A list of all comments wrapped in {@link CommentResponseDTO}.
+     */
     @Override
     public List<CommentResponseDTO> getAll() {
         List<Comment> comments = commentRepository.findAll();
         return CommentResponseDTO.mapToCommentResponseDTO(comments);
     }
 
+    /**
+     * Helping function, which retrieves the required comment by sellerId and commentId.
+     *
+     * @param sellerId The ID of the seller.
+     * @param commentId The ID of the comment.
+     * @return The requested {@link Comment}.
+     */
     private Comment getRequiredComment(Long sellerId, Long commentId) {
         return commentRepository.findByIdAndSellerId(commentId, sellerId)
                 .orElseThrow(() -> new ResourceNotFoundException(

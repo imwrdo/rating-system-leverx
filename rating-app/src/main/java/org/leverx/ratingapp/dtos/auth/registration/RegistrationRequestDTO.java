@@ -1,9 +1,11 @@
 package org.leverx.ratingapp.dtos.auth.registration;
 
 import lombok.Builder;
-import lombok.NonNull;
 
+/**
+ * DTO for user registration requests.
+ * This record encapsulates user details required for registration.
+ */
 @Builder
-@NonNull
 public record RegistrationRequestDTO(String firstName, String lastName, String password, String email) {
 }

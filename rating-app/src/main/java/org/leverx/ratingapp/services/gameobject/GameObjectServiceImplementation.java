@@ -4,16 +4,19 @@ import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.leverx.ratingapp.dtos.gameobject.GameObjectRequestDTO;
 import org.leverx.ratingapp.dtos.gameobject.GameObjectResponseDTO;
-import org.leverx.ratingapp.entities.GameObject;
-import org.leverx.ratingapp.entities.User;
-import org.leverx.ratingapp.enums.Status;
+import org.leverx.ratingapp.models.entities.GameObject;
+import org.leverx.ratingapp.models.entities.User;
+import org.leverx.ratingapp.models.enums.Status;
 import org.leverx.ratingapp.repositories.GameObjectRepository;
 import org.leverx.ratingapp.services.auth.AuthenticationAndRegistrationServiceImplementation;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 
-
+/**
+ * Service implementation of {@link GameObjectService} for managing game objects.
+ * Provides CRUD operations such as creating, updating, retrieving, and deleting game objects.
+ */
 @Service
 @AllArgsConstructor
 @Transactional
@@ -21,10 +24,20 @@ public class GameObjectServiceImplementation implements GameObjectService {
     private GameObjectRepository gameObjectRepository;
     private AuthenticationAndRegistrationServiceImplementation authAndRegService;
 
+    /**
+     * Creates a new game object.
+     *
+     * @param gameObject The data transfer object (DTO) containing information about the game object to be created.
+     * @return A {@link GameObjectResponseDTO} containing details of the created game object.
+     * @throws RuntimeException If the game object cannot be created.
+     */
+    @Transactional
     @Override
     public GameObjectResponseDTO create(GameObjectRequestDTO gameObject) {
+        // Get the current authenticated user
         User currentUser = authAndRegService.getCurrentUser();
 
+        // Create a new GameObject instance
         var game = GameObject.builder()
                 .title(gameObject.title())
                 .text(gameObject.text())
@@ -42,12 +55,26 @@ public class GameObjectServiceImplementation implements GameObjectService {
                 .build();
     }
 
+    /**
+     * Retrieves all game objects from the repository.
+     *
+     * @return A list of {@link GameObjectResponseDTO} representing all the game objects.
+     */
     @Override
     public List<GameObjectResponseDTO> getAll() {
         List<GameObject> gameObjects = gameObjectRepository.findAll();
         return GameObjectResponseDTO.mapToGameObjectResponseDTO(gameObjects);
     }
 
+    /**
+     * Updates an existing game object.
+     *
+     * @param id The ID of the game object to update.
+     * @param gameObject The DTO containing updated data for the game object.
+     * @return A {@link GameObjectResponseDTO} containing details of the updated game object.
+     * @throws RuntimeException If the game object is not found or cannot be updated.
+     */
+    @Transactional
     @Override
     public GameObjectResponseDTO update(Long id, GameObjectRequestDTO gameObject) {
         User currentUser = authAndRegService.getCurrentUser();
@@ -71,6 +98,14 @@ public class GameObjectServiceImplementation implements GameObjectService {
                 .build();
     }
 
+    /**
+     * Deletes an existing game object by ID.
+     *
+     * @param id The ID of the game object to delete.
+     * @return The status of the operation (DELETED).
+     * @throws RuntimeException If the game object is not found or cannot be deleted.
+     */
+    @Transactional
     @Override
     public String delete(Long id) {
         User currentUser = authAndRegService.getCurrentUser();

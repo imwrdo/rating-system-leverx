@@ -1,6 +1,6 @@
 package org.leverx.ratingapp.repositories;
 
-import org.leverx.ratingapp.entities.SellerRating;
+import org.leverx.ratingapp.models.entities.SellerRating;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

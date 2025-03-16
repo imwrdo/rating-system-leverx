@@ -8,9 +8,9 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.leverx.ratingapp.dtos.auth.AuthenticationRequestDTO;
 import org.leverx.ratingapp.dtos.auth.registration.RegistrationRequestDTO;
-import org.leverx.ratingapp.entities.User;
-import org.leverx.ratingapp.enums.Role;
-import org.leverx.ratingapp.enums.Status;
+import org.leverx.ratingapp.models.entities.User;
+import org.leverx.ratingapp.models.enums.Role;
+import org.leverx.ratingapp.models.enums.Status;
 import org.leverx.ratingapp.repositories.UserRepository;
 import org.leverx.ratingapp.services.email.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,7 +37,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Transactional
 @DisplayName("Integration tests for Registration API endpoints")
 @Tag("integration")
-public class RegistrationControllerIntegrationTest {
+public class RegistrationAndAuthenticationControllerIntegrationTest {
 
     @Autowired private MockMvc mockMvc;
     @Autowired private ObjectMapper objectMapper;

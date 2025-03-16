@@ -1,6 +1,6 @@
 package org.leverx.ratingapp.repositories;
 
-import org.leverx.ratingapp.entities.GameObject;
+import org.leverx.ratingapp.models.entities.GameObject;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

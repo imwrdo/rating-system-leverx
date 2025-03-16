@@ -1,8 +1,8 @@
 package org.leverx.ratingapp.config.init;
 
 import lombok.RequiredArgsConstructor;
-import org.leverx.ratingapp.entities.User;
-import org.leverx.ratingapp.enums.Role;
+import org.leverx.ratingapp.models.entities.User;
+import org.leverx.ratingapp.models.enums.Role;
 import org.leverx.ratingapp.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;

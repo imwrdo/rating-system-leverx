@@ -1,7 +1,7 @@
 package org.leverx.ratingapp.config.security;
 
 import lombok.AllArgsConstructor;
-import org.leverx.ratingapp.enums.Role;
+import org.leverx.ratingapp.models.enums.Role;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;

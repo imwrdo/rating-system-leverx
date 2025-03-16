@@ -11,15 +11,29 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+/**
+ * Implementation of the {@link EmailService} interface that handles sending registration
+ * and password reset emails to users.
+ * This service uses {@link JavaMailSender} for sending emails .
+ * It includes email construction methods and handles errors related to email sending.
+ */
 @Service
 @AllArgsConstructor
 public class EmailServiceImplementation implements EmailService {
 
     private final static Logger LOGGER = LoggerFactory
             .getLogger(EmailServiceImplementation.class);
-
+    // Dependency injection of JavaMailSender for sending emails
     private final JavaMailSender mailSender;
 
+    /**
+     * Sends a registration email to the user with an activation link.
+     * This method is asynchronous and will send the email in the background.
+     *
+     * @param to The recipient's email address.
+     * @param name The recipient's name.
+     * @param link The activation link for email verification.
+     */
     @Override
     @Async
     public void sendRegistrationEmail(String to, String name,String link) {
@@ -38,6 +52,14 @@ public class EmailServiceImplementation implements EmailService {
         }
     }
 
+    /**
+     * Sends a password reset email to the user with a reset code.
+     * This method is asynchronous and will send the email in the background.
+     *
+     * @param to The recipient's email address.
+     * @param name The recipient's name.
+     * @param code The password reset code.
+     */
     @Override
     @Async
     public void sendPasswordResetEmail(String to, String name, String code) {
@@ -55,6 +77,13 @@ public class EmailServiceImplementation implements EmailService {
         }
     }
 
+    /**
+     * Builds the HTML content for the registration email.
+     *
+     * @param name The recipient's name.
+     * @param link The activation link for email verification.
+     * @return The HTML content for the registration email.
+     */
     @Override
     public String buildRegistrationEmail(String name, String link) {
         return "<div style=\"font-family:Helvetica,Arial,sans-serif;font-size:16px;margin:0;color:#0b0c0c\">\n" +
@@ -125,6 +154,13 @@ public class EmailServiceImplementation implements EmailService {
                 "</div></div>";
     }
 
+    /**
+     * Builds the HTML content for the password reset email.
+     *
+     * @param name The recipient's name.
+     * @param code The password reset code.
+     * @return The HTML content for the password reset email.
+     */
     @Override
     public String buildPasswordResetEmail(String name, String code) {
         return "<div style=\"font-family:Helvetica,Arial,sans-serif;font-size:16px;margin:0;color:#0b0c0c\">\n" +
