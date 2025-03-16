@@ -33,10 +33,12 @@ public class User implements UserDetails {
     private String lastName;
 
     @Column(name= "is_activated", nullable = false)
-    private Boolean isActivated;
+    @Builder.Default
+    private Boolean isActivated=false;
 
     @Column(name= "is_email_confirmed", nullable = false)
-    private Boolean isEmailConfirmed;
+    @Builder.Default
+    private Boolean isEmailConfirmed=false;
 
     @Column(name="password", nullable = false)
     private String password;
@@ -54,8 +56,10 @@ public class User implements UserDetails {
 
     @PrePersist
     protected void onCreate() {
-        isActivated = role == Role.ADMIN;
-        isEmailConfirmed = role == Role.ADMIN;
+        if(Role.ADMIN.equals(role)) {
+            isActivated = true;
+            isEmailConfirmed = true;
+        }
         createdAt = LocalDateTime.now();
     }
 

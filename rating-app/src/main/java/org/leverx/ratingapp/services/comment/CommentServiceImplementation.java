@@ -154,6 +154,7 @@ public class CommentServiceImplementation implements CommentService {
                 .map(existingComment -> {
                     authorizationService.authorizeResourceModification(existingComment,currentUser);
                     existingComment.setMessage(commentObject.message());
+                    existingComment.setGrade(commentObject.grade());
                     commentRepository.save(existingComment);
                     return existingComment;
                 })
@@ -163,6 +164,7 @@ public class CommentServiceImplementation implements CommentService {
                 .message(comment.getMessage())
                 .author(comment.getAuthor().getEmail())
                 .seller(comment.getSeller().getEmail())
+                .grade(comment.getGrade())
                 .status(Status.UPDATED.getValueOfStatus())
                 .build();
     }
