@@ -46,6 +46,26 @@ class RatingCalculationServiceUnitTests {
                 .id(1L)
                 .email("seller@test.com")
                 .build();
+                
+        // Add common test data setup
+        when(sellerRatingRepository.findByUserId(seller.getId()))
+                .thenReturn(Optional.of(SellerRating.builder().user(seller).build()));
+    }
+
+    // Helper method for creating test comments
+    private Comment createTestComment(int grade, boolean isApproved) {
+        return Comment.builder()
+                .grade(grade)
+                .isApproved(isApproved)
+                .build();
+    }
+
+    // Helper method for verifying rating calculations
+    private void verifyRatingCalculation(double expectedAverage, int expectedTotal) {
+        verify(sellerRatingRepository).save(argThat(rating ->
+                rating.getAverageRating() == expectedAverage &&
+                rating.getTotalComments() == expectedTotal
+        ));
     }
 
     /**
@@ -61,9 +81,9 @@ class RatingCalculationServiceUnitTests {
     @DisplayName("Update seller rating with new approved comments")
     void testUpdateSellerRating() {
         // Arrange
-        Comment comment1 = Comment.builder().grade(5).isApproved(true).build();
-        Comment comment2 = Comment.builder().grade(4).isApproved(true).build();
-        Comment comment3 = Comment.builder().grade(3).isApproved(false).build();
+        Comment comment1 = createTestComment(5, true);
+        Comment comment2 = createTestComment(4, true);
+        Comment comment3 = createTestComment(3, false);
 
         SellerRating sellerRating = SellerRating.builder()
                 .id(1L)
@@ -81,11 +101,7 @@ class RatingCalculationServiceUnitTests {
         ratingService.updateSellerRating(seller.getId());
 
         // Assert
-        verify(sellerRatingRepository).save(argThat(rating ->
-                rating.getAverageRating() == 4.5 &&
-                        rating.getRating() == 5 &&
-                        rating.getTotalComments() == 2
-        ));
+        verifyRatingCalculation(4.5, 2);
     }
 
     /**
@@ -143,9 +159,9 @@ class RatingCalculationServiceUnitTests {
     @DisplayName("Calculate average rating with multiple grades")
     void testCalculateAverageRating() {
         // Arrange
-        Comment comment1 = Comment.builder().grade(5).isApproved(true).build();
-        Comment comment2 = Comment.builder().grade(3).isApproved(true).build();
-        Comment comment3 = Comment.builder().grade(4).isApproved(true).build();
+        Comment comment1 = createTestComment(5, true);
+        Comment comment2 = createTestComment(3, true);
+        Comment comment3 = createTestComment(4, true);
 
         when(sellerRatingRepository.findByUserId(seller.getId()))
                 .thenReturn(Optional.of(SellerRating.builder().user(seller).build()));
@@ -156,10 +172,7 @@ class RatingCalculationServiceUnitTests {
         ratingService.updateSellerRating(seller.getId());
 
         // Assert
-        verify(sellerRatingRepository).save(argThat(rating ->
-                rating.getAverageRating() == 4.0 &&
-                        rating.getTotalComments() == 3
-        ));
+        verifyRatingCalculation(4.0, 3);
     }
 
     /**
@@ -173,8 +186,8 @@ class RatingCalculationServiceUnitTests {
     @DisplayName("Handle seller with no approved comments")
     void testNoApprovedComments() {
         // Arrange
-        Comment comment1 = Comment.builder().grade(5).isApproved(false).build();
-        Comment comment2 = Comment.builder().grade(4).isApproved(false).build();
+        Comment comment1 = createTestComment(5, false);
+        Comment comment2 = createTestComment(4, false);
 
         when(sellerRatingRepository.findByUserId(seller.getId()))
                 .thenReturn(Optional.of(SellerRating.builder().user(seller).build()));
@@ -184,10 +197,7 @@ class RatingCalculationServiceUnitTests {
         ratingService.updateSellerRating(seller.getId());
 
         // Assert
-        verify(sellerRatingRepository).save(argThat(rating ->
-                rating.getAverageRating() == 0.0 &&
-                        rating.getTotalComments() == 0
-        ));
+        verifyRatingCalculation(0.0, 0);
     }
 
     /**
@@ -208,7 +218,7 @@ class RatingCalculationServiceUnitTests {
                 .totalComments(2)
                 .build();
 
-        Comment newComment = Comment.builder().grade(5).isApproved(true).build();
+        Comment newComment = createTestComment(5, true);
 
         when(sellerRatingRepository.findByUserId(seller.getId()))
                 .thenReturn(Optional.of(existing));
@@ -218,10 +228,7 @@ class RatingCalculationServiceUnitTests {
         ratingService.updateSellerRating(seller.getId());
 
         // Assert
-        verify(sellerRatingRepository).save(argThat(rating ->
-                rating.getAverageRating() == 5.0 &&
-                        rating.getTotalComments() == 1
-        ));
+        verifyRatingCalculation(5.0, 1);
     }
 
     /**
@@ -278,8 +285,8 @@ class RatingCalculationServiceUnitTests {
     @DisplayName("Round average rating to nearest integer")
     void testRoundAverageRating() {
         // Arrange
-        Comment comment1 = Comment.builder().grade(4).isApproved(true).build();
-        Comment comment2 = Comment.builder().grade(5).isApproved(true).build();
+        Comment comment1 = createTestComment(4, true);
+        Comment comment2 = createTestComment(5, true);
 
         when(sellerRatingRepository.findByUserId(seller.getId()))
                 .thenReturn(Optional.of(SellerRating.builder().user(seller).build()));

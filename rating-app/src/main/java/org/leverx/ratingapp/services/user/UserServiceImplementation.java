@@ -80,11 +80,7 @@ public class UserServiceImplementation implements UserDetailsService, UserServic
 
         // Map each user to a UserDTO and calculate rating data
         return users.stream()
-            .map(user -> {
-                Double rating = ratingCalculationServiceImplementation.getSellerRating(user.getId());
-                Integer totalRatings = ratingCalculationServiceImplementation.getNumberOfRatings(user.getId());
-                return UserDTO.mapToUserDTO(user, comments, gameObjects, isAdmin, rating, totalRatings);
-            })
+            .map(user -> createUserDTO(user, comments, gameObjects, isAdmin))
             .collect(Collectors.toList());
     }
 
@@ -113,18 +109,7 @@ public class UserServiceImplementation implements UserDetailsService, UserServic
         List<Comment> comments = commentRepository.findAll();
         List<GameObject> gameObjects = gameObjectRepository.findAll();
 
-        // Get the user's rating and total ratings count
-        Double rating = ratingCalculationServiceImplementation.getSellerRating(user_id);
-        Integer totalRatings = ratingCalculationServiceImplementation.getNumberOfRatings(user_id);
-        
-        return UserDTO.mapToUserDTO(
-                user,
-                comments,
-                gameObjects,
-                !onlyActive,
-                rating,
-                totalRatings
-        );
+        return createUserDTO(user, comments, gameObjects, !onlyActive);
     }
 
     /**
@@ -232,6 +217,28 @@ public class UserServiceImplementation implements UserDetailsService, UserServic
         List<Comment> comments = commentRepository.findAll();
         List<GameObject> games = gameObjectRepository.findAll();
         return UserDTO.mapToUsersDTO(users, comments, games,isAdmin);
+    }
+
+    // Helper method to calculate user ratings and total comments
+    private record UserRatingData(Double rating, Integer totalComments) {}
+    
+    private UserRatingData calculateUserRatingData(Long userId) {
+        return new UserRatingData(
+            ratingCalculationServiceImplementation.getSellerRating(userId),
+            ratingCalculationServiceImplementation.getNumberOfRatings(userId)
+        );
+    }
+
+    private UserDTO createUserDTO(User user, List<Comment> comments, List<GameObject> gameObjects, boolean isAdmin) {
+        UserRatingData ratingData = calculateUserRatingData(user.getId());
+        return UserDTO.mapToUserDTO(
+            user, 
+            comments, 
+            gameObjects, 
+            isAdmin, 
+            ratingData.rating(), 
+            ratingData.totalComments()
+        );
     }
 
 }
