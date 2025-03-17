@@ -33,7 +33,7 @@ public class GameObject {
     @JoinColumn(
             nullable = false,
             referencedColumnName = "id",
-            name = "app_user_id"
+            name = "seller_id"
     )
     private User user; // The user who created the game object (foreign key to the User entity).
 
