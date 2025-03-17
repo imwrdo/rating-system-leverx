@@ -14,6 +14,7 @@ import org.leverx.ratingapp.exceptions.ResourceNotFoundException;
 import org.leverx.ratingapp.repositories.UserRepository;
 import org.leverx.ratingapp.services.auth.authorization.AuthorizationServiceImplementation;
 import org.leverx.ratingapp.services.auth.jwt.JwtService;
+import org.leverx.ratingapp.services.auth.resetcode.ResetCodeService;
 import org.leverx.ratingapp.services.auth.token.ConfirmationTokenService;
 import org.leverx.ratingapp.services.pendingcomment.PendingCommentService;
 import org.leverx.ratingapp.services.user.UserService;
@@ -49,6 +50,7 @@ public class AuthenticationAndRegistrationServiceImplementation implements Authe
     private final AuthenticationManager authenticationManager;
     private final PendingCommentService pendingCommentService;
     private final AuthorizationServiceImplementation authorizationService;
+    private final ResetCodeService resetCodeService;
 
     /**
      * Retrieves the current authenticated user.
@@ -246,7 +248,7 @@ public class AuthenticationAndRegistrationServiceImplementation implements Authe
                 .orElseThrow(() -> new InvalidOperationException("Email not found"));
 
         String resetCode = generateResetCode();
-        confirmationTokenService.saveResetCode(email, resetCode);
+        resetCodeService.saveResetCode(email, resetCode);
         emailService.sendPasswordResetEmail(email,user.getFirstName(), resetCode);
 
         return AuthenticationResponseDTO.builder()
@@ -264,7 +266,7 @@ public class AuthenticationAndRegistrationServiceImplementation implements Authe
     @Transactional
     @Override
     public AuthenticationResponseDTO resetPassword(PasswordResetRequestDTO request) {
-        String storedCode = confirmationTokenService.getResetCode(request.email());
+        String storedCode = resetCodeService.getResetCode(request.email());
         if (storedCode == null || !storedCode.equals(request.code())) {
             throw new InvalidOperationException("Invalid or expired reset code");
         }
@@ -274,7 +276,7 @@ public class AuthenticationAndRegistrationServiceImplementation implements Authe
 
         user.setPassword(passwordEncoder.encode(request.newPassword()));
         userRepository.save(user);
-        confirmationTokenService.removeResetCode(request.email());
+        resetCodeService.removeResetCode(request.email());
 
         return AuthenticationResponseDTO.builder()
                 .user(request.email())
@@ -291,7 +293,7 @@ public class AuthenticationAndRegistrationServiceImplementation implements Authe
      */
     @Override
     public AuthenticationResponseDTO verifyResetCode(String email, String code) {
-        String storedCode = confirmationTokenService.getResetCode(email);
+        String storedCode = resetCodeService.getResetCode(email);
         boolean isValid = storedCode != null && storedCode.equals(code);
 
         return AuthenticationResponseDTO.builder()

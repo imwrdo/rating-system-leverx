@@ -1,19 +1,16 @@
 package org.leverx.ratingapp.repositories.redis;
 
+import lombok.AllArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
 import java.util.concurrent.TimeUnit;
 
 @Repository
+@AllArgsConstructor
 public class PendingCommentRepository {
     private final RedisTemplate<String, String> redisTemplate;
     private static final String PENDING_COMMENT_PREFIX = "pending_comment:";  // Prefix for pending comments
     private static final long COMMENT_TTL_MINUTES = 30;  // TTL in minutes for pending comments
-
-    // Constructor to inject RedisTemplate
-    public PendingCommentRepository(RedisTemplate<String, String> redisTemplate) {
-        this.redisTemplate = redisTemplate;
-    }
 
     // Save the pending comment in Redis and set expiration time
     public void savePendingComment(String email, String commentJson) {

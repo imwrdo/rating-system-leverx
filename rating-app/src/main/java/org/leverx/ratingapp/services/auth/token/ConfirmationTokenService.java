@@ -16,12 +16,4 @@ public interface ConfirmationTokenService {
      // Removes the confirmation token for a user's email
      void removeConfirmationToken(String email);
 
-     // Saves a reset code for a specific user's email
-     void saveResetCode(String email, String resetCode);
-
-     // Retrieves the reset code associated with a user's email
-     String getResetCode(String email);
-
-     // Removes the reset code associated with a user's email.
-     void removeResetCode(String email);
 }
