@@ -51,7 +51,7 @@ public class CommentController {
      *
      * @param seller_id the seller's ID
      * @param request the request object containing comment details and user registration information
-     * @return a ResponseEntity containing the created comment or a temporary response
+     * @return a {@link ResponseEntity} containing the created comment or a temporary response
      * if the user is pending registration
      */
     @PostMapping(path="optional-seller")
