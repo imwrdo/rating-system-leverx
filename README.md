@@ -109,6 +109,16 @@ rating-app/
                     ├── CommentControllerIntegrationTests
                     └── UserControllerIntegrationTests
 ```
+### Running with Docker (Recommended)
+1. Switch to the containerized branch:
+   ```bash
+   git checkout containerized
+   ```
+2. Run the application using Docker Compose:
+   ```bash
+   docker-compose up
+   ```
+   This will start the application, PostgreSQL, and Redis containers.
 
 ## API Endpoints
 
