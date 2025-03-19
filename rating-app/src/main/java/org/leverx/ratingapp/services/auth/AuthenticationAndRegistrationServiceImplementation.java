@@ -104,7 +104,7 @@ public class AuthenticationAndRegistrationServiceImplementation implements Authe
         var jwtToken = jwtService.generateToken(user);
         confirmationTokenService.saveConfirmationToken(user.getEmail(), jwtToken);
 
-        String link = "http://localhost:8080/auth/confirm?token=" + jwtToken;
+        String link = String.format("https://%s/auth/confirm?token=%s",System.getenv("APP_DOMAIN"),jwtToken);
         emailService.sendRegistrationEmail(registrationRequestDTO.email(),
                 registrationRequestDTO.firstName(),
                 link);
