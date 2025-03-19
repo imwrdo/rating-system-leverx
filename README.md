@@ -119,7 +119,20 @@ rating-app/
    docker-compose up
    ```
    This will start the application, PostgreSQL, and Redis containers.
-
+### Running with SAP BTP (Hightly recommended)
+1. Switch to the containerized branch:
+   ```bash
+   git checkout deploy
+   ```
+2. Build the application using Maven:
+   ```bash
+    chmod +x mvnw && ./mvnw clean package -Dmaven.test.skip=true -Dspring.config.location=src/main/resources/application-cloud.properties
+   ```
+3. Send application to SAP BTP Cloud:
+   ```bash
+    cf push
+   ```
+   This will start the application, PostgreSQL, and Redis containers will be alredy on SAP BTP.
 ## API Endpoints
 
 ### Authentication
