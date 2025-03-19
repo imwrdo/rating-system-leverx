@@ -27,7 +27,7 @@ public class ConfirmationTokenServiceImplementation implements ConfirmationToken
      */
     @Override
     public void saveConfirmationToken(String email, String token) {
-        confirmationTokenRedisRepository.saveToken(email, token);
+        confirmationTokenRedisRepository.save(email, token);
     }
 
     /**
@@ -39,7 +39,7 @@ public class ConfirmationTokenServiceImplementation implements ConfirmationToken
      */
     @Override
     public Optional<String> getConfirmationToken(String email) {
-        return Optional.ofNullable(confirmationTokenRedisRepository.getToken(email));
+        return Optional.ofNullable(confirmationTokenRedisRepository.get(email));
     }
 
     /**
@@ -50,7 +50,7 @@ public class ConfirmationTokenServiceImplementation implements ConfirmationToken
      */
     @Override
     public void removeConfirmationToken(String email) {
-        confirmationTokenRedisRepository.removeToken(email);
+        confirmationTokenRedisRepository.remove(email);
     }
 
 

@@ -100,7 +100,6 @@ public class CommentController {
     @GetMapping
     public ResponseEntity<List<CommentResponseDTO>> getAllAcceptedComments(
             @PathVariable Long seller_id){
-
         return ResponseEntity.ok(commentService.getAllBySellerId(seller_id,false));
     }
 
@@ -129,7 +128,6 @@ public class CommentController {
     public ResponseEntity<String> delete(
             @PathVariable Long seller_id,
             @PathVariable Long comment_id){
-
         return ResponseEntity.status(202).body(commentService.delete(seller_id,comment_id));
     }
 

@@ -1,7 +1,7 @@
 package org.leverx.ratingapp.services.auth.resetcode;
 
 import lombok.AllArgsConstructor;
-import org.leverx.ratingapp.repositories.redis.ResetCodeRepository;
+import org.leverx.ratingapp.repositories.redis.ResetCodeRedisRepository;
 import org.springframework.stereotype.Service;
 
 /**
@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 @Service
 @AllArgsConstructor
 public class ResetCodeServiceImplementation implements ResetCodeService {
-    private final ResetCodeRepository resetCodeRepository;
+    private final ResetCodeRedisRepository resetCodeRedisRepository;
     /**
      * Saves a reset code for a specific user's email.
      * The reset code is typically used for password reset functionality.
@@ -22,7 +22,7 @@ public class ResetCodeServiceImplementation implements ResetCodeService {
      */
     @Override
     public void saveResetCode(String email, String resetCode) {
-        resetCodeRepository.saveResetCode(email, resetCode);
+        resetCodeRedisRepository.save(email, resetCode);
     }
 
     /**
@@ -34,7 +34,7 @@ public class ResetCodeServiceImplementation implements ResetCodeService {
      */
     @Override
     public String getResetCode(String email) {
-        return resetCodeRepository.getResetCode(email);
+        return resetCodeRedisRepository.get(email);
     }
 
     /**
@@ -45,6 +45,6 @@ public class ResetCodeServiceImplementation implements ResetCodeService {
      */
     @Override
     public void removeResetCode(String email) {
-        resetCodeRepository.removeResetCode(email);
+        resetCodeRedisRepository.remove(email);
     }
 }
