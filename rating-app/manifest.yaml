@@ -1,0 +1,18 @@
+applications:
+  - name: rating-app
+    memory: 1G
+    instances: 1
+    path: target/rating-app-0.0.1-SNAPSHOT.jar
+    buildpacks:
+      - sap_java_buildpack_jakarta
+    env:
+      SPRING_PROFILES_ACTIVE: cloud
+      JBP_CONFIG_SAP_MACHINE_JDK: '{ jre: { version: 17.+ } }'
+      JBP_CONFIG_COMPONENTS: "jres: ['com.sap.xs.java.buildpack.jdk.SAPMachineJDK']"
+      BP_JVM_VERSION: 17.*
+    routes:
+        - route: rating-app-balanced-otter-vp.cfapps.us10-001.hana.ondemand.com
+    services:
+      - postgres
+      - redis
+      - logs
