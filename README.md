@@ -43,23 +43,10 @@ rating-app/
 │   │   │   └── org/leverx/ratingapp/
 │   │   │       ├── config/             # Application configuration
 │   │   │       │   ├── aop/           # Aspect-oriented programming configs
-│   │   │       │   │   ├── AdminLoggingAspect
-│   │   │       │   │   ├── AuthLoggingAspect
-│   │   │       │   │   ├── BaseLoggingAspect
-│   │   │       │   │   ├── CommentLoggingAspect
-│   │   │       │   │   ├── GameObjectLoggingAspect
-│   │   │       │   │   └── UserLoggingAspect
 │   │   │       │   ├── init/          # Initialization configs
-│   │   │       │   │   ├── AdminInitializationConfig
-│   │   │       │   │   └── EnvLoader
 │   │   │       │   ├── redis/         # Redis configuration
 │   │   │       │   └── security/      # Security configurations
 │   │   │       ├── controllers/        # REST API endpoints
-│   │   │       │   ├── AdminController
-│   │   │       │   ├── AuthController
-│   │   │       │   ├── CommentController
-│   │   │       │   ├── GameObjectController
-│   │   │       │   └── UserController
 │   │   │       ├── dtos/              # Data Transfer Objects
 │   │   │       │   ├── auth/          # Authentication DTOs
 │   │   │       │   ├── comments/      # Comment DTOs
@@ -68,21 +55,11 @@ rating-app/
 │   │   │       │   └── user/          # User DTOs
 │   │   │       ├── models/            # Entity models
 │   │   │       │   ├── entities/      # JPA entities
-│   │   │       │   │   ├── Comment
-│   │   │       │   │   ├── GameObject
-│   │   │       │   │   ├── SellerRating
-│   │   │       │   │   └── User
 │   │   │       │   └── enums/         # Enumerations
-│   │   │       │       ├── Role
-│   │   │       │       └── Status
 │   │   │       ├── exceptions/         # Custom exceptions
 │   │   │       ├── repositories/       # Data access layer
 │   │   │       │   ├── redis/         # Redis repositories
-│   │   │       │   ├── token/         # Token repositories
-│   │   │       │   ├── CommentRepository
-│   │   │       │   ├── GameObjectRepository
-│   │   │       │   ├── SellerRatingRepository
-│   │   │       │   └── UserRepository
+│   │   │       │   └──token/         # Token repositories
 │   │   │       └── services/          # Business logic
 │   │   │           ├── auth/          # Authentication services
 │   │   │           │   ├── jwt/       # JWT services
@@ -94,21 +71,43 @@ rating-app/
 │   │   │           ├── rating/        # Rating calculations
 │   │   │           └── user/          # User operations
 │   │   └── resources/
-│   │       ├── application.properties  # Application configuration
-│   │       └── templates/             # Email templates
+│   │       └── application.properties  # Application configuration
 │   └── test/
         └── java/
             └── org/leverx/ratingapp/
                 ├── unit/              # Unit tests
-                │   ├── CommentServiceUnitTests
-                │   ├── GameObjectServiceUnitTests
-                │   ├── RatingCalculationServiceUnitTests
-                │   └── UserServiceUnitTests
                 └── integration/       # Integration tests
-                    ├── AuthControllerIntegrationTests  
-                    ├── CommentControllerIntegrationTests
-                    └── UserControllerIntegrationTests
+                    
 ```
+### Running with Docker (Recommended)
+1. Switch to the containerized branch:
+   ```bash
+   git checkout containerized
+   ```
+2. Run the application using Docker Compose:
+   ```bash
+   docker-compose up
+   ```
+   This will start the application, PostgreSQL, and Redis containers.
+### Running with SAP BTP (Hightly recommended)
+1. Switch to the containerized branch:
+   ```bash
+   git checkout deploy
+   ```
+2. Build the application using Maven:
+   ```bash
+    chmod +x mvnw && ./mvnw clean package -Dmaven.test.skip=true -Dspring.config.location=src/main/resources/application-cloud.properties
+   ```
+3. Send application to SAP BTP Cloud:
+   ```bash
+    cf push
+   ```
+   This will start the application, PostgreSQL, and Redis containers will be alredy on SAP BTP.
+## Data layer schema
+
+<div align="center">
+  <img src="https://github.com/imwrdo/rating-system-leverx/blob/main/img/data_layer.png" style="width: 100%;">
+</div>
 
 ## API Endpoints
 

@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.leverx.ratingapp.dtos.comments.CommentRequestDTO;
 import org.leverx.ratingapp.dtos.comments.PendingCommentDTO;
 import org.leverx.ratingapp.exceptions.InvalidOperationException;
-import org.leverx.ratingapp.repositories.redis.PendingCommentRepository;
+import org.leverx.ratingapp.repositories.redis.PendingCommentRedisRepository;
 import org.leverx.ratingapp.services.comment.CommentService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,7 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 @RequiredArgsConstructor
 public class PendingCommentServiceImplementation implements PendingCommentService {
-    private final PendingCommentRepository pendingCommentRepository;
+    private final PendingCommentRedisRepository pendingCommentRedisRepository;
     private final CommentService commentService;
     private final ObjectMapper objectMapper;
 
@@ -44,7 +44,7 @@ public class PendingCommentServiceImplementation implements PendingCommentServic
         try {
             // Convert the pending comment DTO to a JSON string
             String commentJson = objectMapper.writeValueAsString(pendingComment);
-            pendingCommentRepository.savePendingComment(email, commentJson);
+            pendingCommentRedisRepository.save(email, commentJson);
         } catch (JsonProcessingException e) {
             // Handle the case where JSON serialization fails
             throw new InvalidOperationException("Failed to save pending comment");
@@ -62,7 +62,7 @@ public class PendingCommentServiceImplementation implements PendingCommentServic
     @Override
     public void processPendingComment(String email) {
         // Retrieve the pending comment JSON string from the repository using the user's email
-        String pendingCommentJson = pendingCommentRepository.getPendingComment(email);
+        String pendingCommentJson = pendingCommentRedisRepository.get(email);
 
         // If a pending comment exists for the email, process it
         if (pendingCommentJson != null) {
@@ -75,7 +75,7 @@ public class PendingCommentServiceImplementation implements PendingCommentServic
                         new CommentRequestDTO(pendingComment.message(),pendingComment.grade()));
 
                 // Remove the processed pending comment from the repository
-                pendingCommentRepository.removePendingComment(email);
+                pendingCommentRedisRepository.remove(email);
             } catch (JsonProcessingException e) {
                 // Handle the case where JSON deserialization fails
                 throw new InvalidOperationException("Failed to process pending comment");
