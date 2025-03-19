@@ -106,8 +106,9 @@ rating-app/
 ## Data layer schema
 
 <div align="center">
-  <img src="https://github.com/imwrdo/rating-system-leverx/blob/main/img/data_layer.png" style="width: 75%;">
+  <img src="https://github.com/imwrdo/rating-system-leverx/blob/main/img/data_layer.png" style="width: 100%;">
 </div>
+
 ## API Endpoints
 
 ### Authentication
