@@ -10,9 +10,4 @@ public interface EmailService {
     // Sends a password reset email to the user with a reset code.
     void sendPasswordResetEmail(String to, String name, String code);
 
-    // Builds the HTML content for the registration email
-    String buildRegistrationEmail(String name, String link);
-
-    // Builds the HTML content for the password reset email
-    String buildPasswordResetEmail(String name, String code);
 }

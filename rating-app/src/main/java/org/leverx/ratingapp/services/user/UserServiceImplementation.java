@@ -120,7 +120,7 @@ public class UserServiceImplementation implements UserDetailsService, UserServic
     @Override
     public List<UserDTO> getInactiveUsers() {
         List<User> users = userRepository.findAllInactiveUsers();
-        return mapToUsersDTO(users,true);
+        return adminMapToUsersDTO(users);
     }
 
     /**
@@ -131,7 +131,7 @@ public class UserServiceImplementation implements UserDetailsService, UserServic
     @Override
     public List<UserDTO> getPendingUsers() {
         List<User> users = userRepository.findPendingUsers();
-        return mapToUsersDTO(users, true);
+        return adminMapToUsersDTO(users);
     }
 
     /**
@@ -143,41 +143,37 @@ public class UserServiceImplementation implements UserDetailsService, UserServic
      */
     @Override
     public List<UserRankingDTO> getUserRating(String gameName, Long ratingLimit) {
-        // Fetch all active users and comments
-        List<User> users = userRepository.findAllActiveUsers();
-        List<Comment> comments = commentRepository.findAll();
+        List<User> filteredUsers = userRepository.findAllActiveUsers();
 
-        // Filter comments related to the specified game name if provided
         if (gameName != null && !gameName.isEmpty()) {
-            List<Long> relatedGameIds = gameObjectRepository
-                    .findAllByTitleContainingIgnoreCase(gameName)
-                    .stream()
-                    .map(GameObject::getId)
+            List<GameObject> matchingGames = gameObjectRepository
+                    .findAllByTitleContainingIgnoreCase(gameName);
+
+            List<Long> userIds = matchingGames.stream()
+                    .map(game -> game.getUser().getId())
+                    .distinct()
                     .toList();
-            comments = comments.stream()
-                    .filter(comment -> relatedGameIds.contains(comment.getSeller().getId()))
+
+            // Assign filtered list without modifying original reference
+            filteredUsers = filteredUsers.stream()
+                    .filter(user -> userIds.contains(user.getId()))
                     .toList();
         }
-        // Filter only approved comments
-        comments = comments.stream()
-                .filter(Comment::getIsApproved)
-                .toList();
 
-        // Calculate user ratings and total ratings
-        Map<Long, Double> userRatings = users.stream()
+        Map<Long, Double> userRatings = filteredUsers.stream()
                 .collect(Collectors.toMap(
-                    User::getId,
-                    user -> ratingCalculationServiceImplementation.getSellerRating(user.getId())
+                        User::getId,
+                        user -> ratingCalculationServiceImplementation.getSellerRating(user.getId())
                 ));
 
-        Map<Long, Integer> userTotalRatings = users.stream()
+        Map<Long, Integer> userTotalRatings = filteredUsers.stream()
                 .collect(Collectors.toMap(
-                    User::getId,
-                    user -> ratingCalculationServiceImplementation.getNumberOfRatings(user.getId())
+                        User::getId,
+                        user -> ratingCalculationServiceImplementation.getNumberOfRatings(user.getId())
                 ));
 
-        // Sort users by rating and total number of ratings
-        return users.stream()
+        List<User> finalFilteredUsers = filteredUsers;
+        return filteredUsers.stream()
                 .sorted((u1, u2) -> {
                     int ratingCompare = Double.compare(
                             userRatings.getOrDefault(u2.getId(), 0.0),
@@ -193,7 +189,7 @@ public class UserServiceImplementation implements UserDetailsService, UserServic
                 })
                 .limit(ratingLimit != null && ratingLimit > 0 ? ratingLimit : Long.MAX_VALUE)
                 .map(user -> UserRankingDTO.builder()
-                        .place((long) (users.indexOf(user) + 1))
+                        .place((long) (finalFilteredUsers.indexOf(user) + 1))
                         .id(user.getId())
                         .firstName(user.getFirstName())
                         .lastName(user.getLastName())
@@ -206,17 +202,18 @@ public class UserServiceImplementation implements UserDetailsService, UserServic
                 .collect(Collectors.toList());
     }
 
+
+
     /**
      * Helper method to map a list of users to a list of UserDTOs.
      *
      * @param users The list of users to map.
-     * @param isAdmin Whether the caller is an admin (affects the data returned).
      * @return A list of {@link UserDTO}.
      */
-    private List<UserDTO> mapToUsersDTO(List<User> users, Boolean isAdmin) {
+    private List<UserDTO> adminMapToUsersDTO(List<User> users) {
         List<Comment> comments = commentRepository.findAll();
         List<GameObject> games = gameObjectRepository.findAll();
-        return UserDTO.mapToUsersDTO(users, comments, games,isAdmin);
+        return UserDTO.mapToUsersDTO(users, comments, games, true);
     }
 
     // Helper method to calculate user ratings and total comments
